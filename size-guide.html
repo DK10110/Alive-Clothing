@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Size Guide</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+  --black: #000;
+  --white: #fff;
+  --dove: #bfbfbf;
+}
+
+  body {
+    background: #fff;
+    color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .hero {
+    background: #0a0a0a;
+    color: #fff;
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    position: absolute;
+    right: -20px;
+    top: -30px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 220px;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 8vw, 100px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+  }
+
+  .hero h1 span { color: #fff; display: block; }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 15px;
+    color: #aaa;
+    max-width: 440px;
+    font-weight: 300;
+  }
+
+  .main { padding: 0 60px 80px; max-width: 1100px; margin: 0 auto; }
+
+  /* How to measure */
+  .measure-section {
+    border-top: 1px solid #0a0a0a;
+    padding: 56px 0 48px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 32px;
+  }
+
+  .measure-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    border: 1px solid #0a0a0a;
+  }
+
+  .measure-item {
+    padding: 28px 24px;
+    border-right: 1px solid #0a0a0a;
+    position: relative;
+  }
+
+  .measure-item:last-child { border-right: none; }
+
+  .measure-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: #e8e8e8;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .measure-title {
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .measure-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* Tab nav */
+  .tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #0a0a0a;
+    margin: 48px 0 0;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    padding: 12px 28px;
+    cursor: pointer;
+    color: #bbb;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tab-btn.active { color: #0a0a0a; border-bottom: 3px solid #0a0a0a; }
+  .tab-btn:hover:not(.active) { color: #555; }
+
+  .tab-pane { display: none; padding: 0; }
+  .tab-pane.active { display: block; }
+
+  /* Size table */
+  .size-table-wrap {
+    overflow-x: auto;
+    margin-top: 32px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead tr {
+    background: #0a0a0a;
+    color: #fff;
+  }
+
+  thead th {
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e8e8e8;
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: #f5f5f5; }
+
+  tbody td {
+    padding: 14px 20px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  tbody td:first-child {
+    font-weight: 500;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    color: #0a0a0a;
+  }
+
+  /* Fit guide chips */
+  .fit-section {
+    margin-top: 56px;
+    padding-top: 48px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .fit-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .fit-sub {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .fit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .fit-card {
+    border: 1px solid #0a0a0a;
+    padding: 24px 20px;
+    position: relative;
+  }
+
+  .fit-tag {
+    display: inline-block;
+    background: #0a0a0a;
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    margin-bottom: 16px;
+  }
+
+  .fit-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .fit-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* Unit toggle */
+  .unit-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    margin-bottom: -10px;
+  }
+
+  .unit-toggle span {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #999;
+  }
+
+  .toggle-wrap {
+    display: flex;
+    border: 1px solid #0a0a0a;
+  }
+
+  .unit-btn {
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 6px 16px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #666;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .unit-btn.active { background: #0a0a0a; color: #fff; }
+
+  /* Note box */
+  .note-box {
+    background: #f5f5f5;
+    border-left: 3px solid #0a0a0a;
+    padding: 20px 24px;
+    margin-top: 40px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .note-box strong { color: #0a0a0a; font-weight: 500; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 56px 24px 48px; }
+    .main { padding: 0 24px 60px; }
+    .measure-item { border-right: none; border-bottom: 1px solid #0a0a0a; }
+    .measure-item:last-child { border-bottom: none; }
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────────────── */
+footer { background:var(--black); color:var(--white); padding:80px 60px 40px; }
+.footer-top {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:60px; margin-bottom:60px;
+}
+.footer-logo{
+  width:230px;   /* adjust size if needed */
+  max-width:100%;
+  height:auto;
+  margin-bottom:8px;
+  display:block;
+  filter: brightness(0) invert(1);
+  margin-top: 60px;
+}
+.footer-tagline {
+  font-style:italic; font-weight:300; color:var(--dove);
+  font-size:20px; margin-bottom:20px;
+}
+.footer-socials { display:flex; gap:10px; }
+.social-btn {
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; transition:border-color .2s, background .2s;
+}
+.social-btn:hover { border-color:var(--white); background:rgba(255,255,255,.08); opacity:1; }
+.social-btn svg { width:16px; height:16px; color:var(--white); }
+.footer-col h4 {
+  font-family:'Barlow Condensed', sans-serif; font-size:11px;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dove); margin-bottom:24px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; font-weight:300; color:rgba(255,255,255,.7); text-decoration:none;
+  transition:color .2s;
+}
+.footer-col ul li a:hover { color:var(--white); opacity:1; }
+.footer-contact-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:14px; font-size:13px; font-weight:300; color:rgba(255,255,255,.7);
+}
+.footer-contact-item svg { width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--dove); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255,255,255,.3); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696; /* accent color */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@media(max-width:900px){
+  footer{padding:60px 24px 30px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:32px}
+}
+@media(max-width:540px){
+  .footer-top{grid-template-columns:1fr;gap:28px}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+}
+
+/* Make tab nav scrollable on mobile */
+@media(max-width:640px){
+  .tab-nav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tab-nav::-webkit-scrollbar{display:none}
+  .tab-btn{font-size:18px;padding:10px 18px;white-space:nowrap;flex-shrink:0}
+}
+
+@media(max-width:540px){
+  .hero{padding:48px 20px 40px}
+  .hero h1 span{font-size:inherit}
+  .hero-sub{font-size:14px}
+  .main{padding:0 20px 48px}
+  .measure-section{padding:40px 0 36px}
+  .measure-num{font-size:36px}
+  .measure-title{font-size:12px}
+  .measure-desc{font-size:12px}
+  .fit-section{padding-top:36px}
+  .fit-section h2{font-size:28px}
+  .fit-name{font-size:22px}
+  .fit-desc{font-size:12px}
+  .fit-card{padding:20px 16px}
+  .note-box{padding:16px 18px;font-size:12px}
+  .unit-toggle{flex-wrap:wrap;gap:12px}
+}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; }
+
+.footer-logo { max-width: 100%; }
+
+@media(max-width:400px){
+  .hero{padding:40px 16px 32px}
+  .main{padding:0 16px 40px}
+  .measure-num{font-size:30px}
+  .fit-name{font-size:20px}
+  .note-box{padding:14px 14px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <p class="hero-label">Fit Reference</p>
+  <h1>
+    <span>Size</span>
+    <span>Guide</span>
+  </h1>
+  <p class="hero-sub">All measurements are taken flat against the body. When between sizes, we recommend sizing up for a relaxed fit.</p>
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#ffffff;text-decoration:none;transition:color .2s">← Back to ALIVE</a>
+</div>
+
+<div class="main">
+
+  <!-- How to measure -->
+  <section class="measure-section">
+    <p class="section-label">How to Measure</p>
+    <div class="measure-grid">
+      <div class="measure-item">
+        <div class="measure-num">01</div>
+        <div class="measure-title">Chest</div>
+        <div class="measure-desc">Measure around the fullest part of your chest, keeping the tape horizontal.</div>
+      </div>
+      <div class="measure-item">
+        <div class="measure-num">02</div>
+        <div class="measure-title">Waist</div>
+        <div class="measure-desc">Measure around your natural waistline, just above the hip bone.</div>
+      </div>
+      <div class="measure-item">
+        <div class="measure-num">03</div>
+        <div class="measure-title">Hips</div>
+        <div class="measure-desc">Measure around the widest part of your hips and seat.</div>
+      </div>
+      <div class="measure-item">
+        <div class="measure-num">04</div>
+        <div class="measure-title">Inseam</div>
+        <div class="measure-desc">Measure from the crotch seam down to the ankle along the inside leg.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Unit toggle -->
+  <div class="unit-toggle">
+    <span>Units</span>
+    <div class="toggle-wrap">
+      <button class="unit-btn active" onclick="setUnit('in', this)">Inches</button>
+      <button class="unit-btn" onclick="setUnit('cm', this)">CM</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="openTab('tops', this)">Tops</button>
+    <button class="tab-btn" onclick="openTab('bottoms', this)">Bottoms</button>
+    <button class="tab-btn" onclick="openTab('dresses', this)">Dresses</button>
+    <button class="tab-btn" onclick="openTab('outerwear', this)">Outerwear</button>
+  </div>
+
+  <!-- TOPS -->
+  <div id="tops" class="tab-pane active">
+    <div class="size-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>US / UK</th>
+            <th>EU</th>
+            <th>Chest</th>
+            <th>Waist</th>
+            <th>Hips</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>XS</td><td>0–2</td><td>32–34</td><td class="val" data-in="31–33" data-cm="79–84">31–33 in</td><td class="val" data-in="24–26" data-cm="61–66">24–26 in</td><td class="val" data-in="34–36" data-cm="86–91">34–36 in</td></tr>
+          <tr><td>S</td><td>4–6</td><td>36–38</td><td class="val" data-in="33–35" data-cm="84–89">33–35 in</td><td class="val" data-in="26–28" data-cm="66–71">26–28 in</td><td class="val" data-in="36–38" data-cm="91–97">36–38 in</td></tr>
+          <tr><td>M</td><td>8–10</td><td>40–42</td><td class="val" data-in="35–37" data-cm="89–94">35–37 in</td><td class="val" data-in="28–30" data-cm="71–76">28–30 in</td><td class="val" data-in="38–40" data-cm="97–102">38–40 in</td></tr>
+          <tr><td>L</td><td>12–14</td><td>44–46</td><td class="val" data-in="37–40" data-cm="94–102">37–40 in</td><td class="val" data-in="30–33" data-cm="76–84">30–33 in</td><td class="val" data-in="40–43" data-cm="102–109">40–43 in</td></tr>
+          <tr><td>XL</td><td>16–18</td><td>48–50</td><td class="val" data-in="40–43" data-cm="102–109">40–43 in</td><td class="val" data-in="33–36" data-cm="84–91">33–36 in</td><td class="val" data-in="43–46" data-cm="109–117">43–46 in</td></tr>
+          <tr><td>2XL</td><td>20–22</td><td>52–54</td><td class="val" data-in="43–46" data-cm="109–117">43–46 in</td><td class="val" data-in="36–40" data-cm="91–102">36–40 in</td><td class="val" data-in="46–50" data-cm="117–127">46–50 in</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOTTOMS -->
+  <div id="bottoms" class="tab-pane">
+    <div class="size-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>US / UK</th>
+            <th>EU</th>
+            <th>Waist</th>
+            <th>Hips</th>
+            <th>Inseam</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>XS</td><td>0–2</td><td>32–34</td><td class="val" data-in="24–26" data-cm="61–66">24–26 in</td><td class="val" data-in="34–36" data-cm="86–91">34–36 in</td><td class="val" data-in="29–30" data-cm="74–76">29–30 in</td></tr>
+          <tr><td>S</td><td>4–6</td><td>36–38</td><td class="val" data-in="26–28" data-cm="66–71">26–28 in</td><td class="val" data-in="36–38" data-cm="91–97">36–38 in</td><td class="val" data-in="30–31" data-cm="76–79">30–31 in</td></tr>
+          <tr><td>M</td><td>8–10</td><td>40–42</td><td class="val" data-in="28–30" data-cm="71–76">28–30 in</td><td class="val" data-in="38–40" data-cm="97–102">38–40 in</td><td class="val" data-in="30–32" data-cm="76–81">30–32 in</td></tr>
+          <tr><td>L</td><td>12–14</td><td>44–46</td><td class="val" data-in="30–33" data-cm="76–84">30–33 in</td><td class="val" data-in="40–43" data-cm="102–109">40–43 in</td><td class="val" data-in="31–32" data-cm="79–81">31–32 in</td></tr>
+          <tr><td>XL</td><td>16–18</td><td>48–50</td><td class="val" data-in="33–36" data-cm="84–91">33–36 in</td><td class="val" data-in="43–46" data-cm="109–117">43–46 in</td><td class="val" data-in="31–33" data-cm="79–84">31–33 in</td></tr>
+          <tr><td>2XL</td><td>20–22</td><td>52–54</td><td class="val" data-in="36–40" data-cm="91–102">36–40 in</td><td class="val" data-in="46–50" data-cm="117–127">46–50 in</td><td class="val" data-in="32–33" data-cm="81–84">32–33 in</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DRESSES -->
+  <div id="dresses" class="tab-pane">
+    <div class="size-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>US / UK</th>
+            <th>EU</th>
+            <th>Chest</th>
+            <th>Waist</th>
+            <th>Hips</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>XS</td><td>0–2</td><td>32–34</td><td class="val" data-in="31–33" data-cm="79–84">31–33 in</td><td class="val" data-in="24–26" data-cm="61–66">24–26 in</td><td class="val" data-in="34–36" data-cm="86–91">34–36 in</td></tr>
+          <tr><td>S</td><td>4–6</td><td>36–38</td><td class="val" data-in="33–35" data-cm="84–89">33–35 in</td><td class="val" data-in="26–28" data-cm="66–71">26–28 in</td><td class="val" data-in="36–38" data-cm="91–97">36–38 in</td></tr>
+          <tr><td>M</td><td>8–10</td><td>40–42</td><td class="val" data-in="35–37" data-cm="89–94">35–37 in</td><td class="val" data-in="28–30" data-cm="71–76">28–30 in</td><td class="val" data-in="38–40" data-cm="97–102">38–40 in</td></tr>
+          <tr><td>L</td><td>12–14</td><td>44–46</td><td class="val" data-in="37–40" data-cm="94–102">37–40 in</td><td class="val" data-in="30–33" data-cm="76–84">30–33 in</td><td class="val" data-in="40–43" data-cm="102–109">40–43 in</td></tr>
+          <tr><td>XL</td><td>16–18</td><td>48–50</td><td class="val" data-in="40–43" data-cm="102–109">40–43 in</td><td class="val" data-in="33–36" data-cm="84–91">33–36 in</td><td class="val" data-in="43–46" data-cm="109–117">43–46 in</td></tr>
+          <tr><td>2XL</td><td>20–22</td><td>52–54</td><td class="val" data-in="43–46" data-cm="109–117">43–46 in</td><td class="val" data-in="36–40" data-cm="91–102">36–40 in</td><td class="val" data-in="46–50" data-cm="117–127">46–50 in</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- OUTERWEAR -->
+  <div id="outerwear" class="tab-pane">
+    <div class="size-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>US / UK</th>
+            <th>EU</th>
+            <th>Chest</th>
+            <th>Waist</th>
+            <th>Sleeve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>XS</td><td>0–2</td><td>32–34</td><td class="val" data-in="33–35" data-cm="84–89">33–35 in</td><td class="val" data-in="26–28" data-cm="66–71">26–28 in</td><td class="val" data-in="30–31" data-cm="76–79">30–31 in</td></tr>
+          <tr><td>S</td><td>4–6</td><td>36–38</td><td class="val" data-in="35–37" data-cm="89–94">35–37 in</td><td class="val" data-in="28–30" data-cm="71–76">28–30 in</td><td class="val" data-in="31–32" data-cm="79–81">31–32 in</td></tr>
+          <tr><td>M</td><td>8–10</td><td>40–42</td><td class="val" data-in="37–39" data-cm="94–99">37–39 in</td><td class="val" data-in="30–32" data-cm="76–81">30–32 in</td><td class="val" data-in="32–33" data-cm="81–84">32–33 in</td></tr>
+          <tr><td>L</td><td>12–14</td><td>44–46</td><td class="val" data-in="39–42" data-cm="99–107">39–42 in</td><td class="val" data-in="32–35" data-cm="81–89">32–35 in</td><td class="val" data-in="33–34" data-cm="84–86">33–34 in</td></tr>
+          <tr><td>XL</td><td>16–18</td><td>48–50</td><td class="val" data-in="42–45" data-cm="107–114">42–45 in</td><td class="val" data-in="35–38" data-cm="89–97">35–38 in</td><td class="val" data-in="34–35" data-cm="86–89">34–35 in</td></tr>
+          <tr><td>2XL</td><td>20–22</td><td>52–54</td><td class="val" data-in="45–48" data-cm="114–122">45–48 in</td><td class="val" data-in="38–42" data-cm="97–107">38–42 in</td><td class="val" data-in="35–36" data-cm="89–91">35–36 in</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Fit Guide -->
+  <section class="fit-section">
+    <h2>Fit Guide</h2>
+    <p class="fit-sub">Not sure which fit is right for you? Use this as a reference.</p>
+    <div class="fit-grid">
+      <div class="fit-card">
+        <span class="fit-tag">True to Size</span>
+        <div class="fit-name">Regular</div>
+        <div class="fit-desc">Classic cut. Follows the body without being tight. Our most versatile fit.</div>
+      </div>
+      <div class="fit-card">
+        <span class="fit-tag">Size Down</span>
+        <div class="fit-name">Slim</div>
+        <div class="fit-desc">Closer to the body throughout. If between sizes, size up for comfort.</div>
+      </div>
+      <div class="fit-card">
+        <span class="fit-tag">Size Down</span>
+        <div class="fit-name">Fitted</div>
+        <div class="fit-desc">Cut close to the body. Designed to show the silhouette clearly.</div>
+      </div>
+      <div class="fit-card">
+        <span class="fit-tag">Size Up</span>
+        <div class="fit-name">Oversized</div>
+        <div class="fit-desc">Dropped shoulders, relaxed body. Intentionally loose — size down for a less exaggerated look.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="note-box">
+    <strong>Still unsure?</strong> Our customer team is happy to help you find the perfect fit. Each product page also includes specific garment measurements — these are the actual dimensions of the piece, not body measurements.
+  </div>
+</div>
+
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <img src="alive logo.png" alt="ALIVE Logo" class="footer-logo">
+      <p class="footer-tagline">Wear it. Love it. Live it.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="shop.html?cat=new">New Arrivals</a></li>
+        <li><a href="shop.html?cat=men">Men</a></li>
+        <li><a href="shop.html?cat=women">Women</a></li>
+        <li><a href="shop.html?cat=unisex">Unisex</a></li>
+        <li><a href="shop.html?cat=formal">Formal Wear</a></li>
+        <li><a href="shop.html?cat=casual">Casual Wear</a></li>
+        <li><a href="shop.html?cat=trending">Trending</a></li>
+        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="size-guide.html">Size Guide</a></li>
+        <li><a href="returns-policy.html">Returns Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-5.99-5.99 19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.72-.72a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>+94 70 387 2119</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>aliveclothing.connect@gmail.com</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Monday–Sunday: Open 24 hours</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by 
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+ 
+
+<script>
+  function openTab(id, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  let currentUnit = 'in';
+
+  function setUnit(unit, btn) {
+    currentUnit = unit;
+    document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.val').forEach(cell => {
+      const val = cell.getAttribute('data-' + unit);
+      cell.textContent = val + (unit === 'in' ? ' in' : ' cm');
+    });
+  }
+</script>
+
+</body>
+</html>

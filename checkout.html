@@ -1,0 +1,1199 @@
+l<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — ALIVE Clothing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0a0a0a;--white:#f8f8f8;
+  --dove:#5c5c5c;
+  --dove-light:#b6b6b6;
+  --dove-mid:#979797;
+  --dark-bg:#0d0d0d;--dark-surface:#141414;--dark-card:#1a1a1a;
+  --dark-border:rgba(255,255,255,0.07);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:#ffffff;color:#111111;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+a,button{cursor:pointer;text-decoration:none}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 60px;border-bottom:1px solid #e0e0e0;background:rgba(255,255,255,0.98);backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;}
+.logo::after{content:''}
+.nav-secure{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.4);display:flex;align-items:center;gap:7px}
+.nav-secure svg{width:13px;height:13px}
+.nav-back-link{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.45);display:flex;align-items:center;gap:6px;transition:color .2s}
+.nav-back-link:hover{color:#000}
+/* ── NAV LINKS (CENTER) ── */
+.nav-links-center{display:flex;align-items:center;gap:32px}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(0,0,0,.55);text-decoration:none;transition:color .2s;position:relative}
+.nav-link::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1.5px;background:#111;transition:width .25s}
+.nav-link:hover{color:#111}
+.nav-link:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:20px}
+@media(max-width:768px){.nav-links-center{display:none}.nav-right{gap:12px}}
+
+.nav-back-link svg{width:14px;height:14px}
+@media(max-width:600px){nav{padding:14px 16px;flex-wrap:wrap;gap:8px}.nav-hamburger{display:flex}.nav-secure{font-size:9px;letter-spacing:1.5px}.nav-back-link{font-size:9px;letter-spacing:1.5px}}
+
+/* ── PROGRESS BAR ── */
+.checkout-progress{background:#f5f5f5;border-bottom:1px solid #e0e0e0;padding:0 60px;position:relative;z-index:1}
+.progress-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center}
+.prog-step{display:flex;align-items:center;gap:12px;padding:18px 0;flex:1;position:relative}
+.prog-step:not(:last-child)::after{content:'';position:absolute;right:0;top:50%;width:100%;height:1px;background:var(--dark-border);z-index:-1}
+.prog-num{width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:rgba(0,0,0,.3);flex-shrink:0;transition:all .35s}
+.prog-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.3);transition:color .35s}
+.prog-sep{width:60px;height:1px;background:rgba(0,0,0,.1);flex-shrink:0}
+.prog-step.active .prog-num{border-color:#111;color:#111;background:rgba(0,0,0,.06)}
+.prog-step.active .prog-label{color:#111}
+.prog-step.done .prog-num{border-color:rgba(0,0,0,.35);color:rgba(0,0,0,.45)}
+.prog-step.done .prog-label{color:rgba(0,0,0,.4)}
+@media(max-width:600px){.checkout-progress{padding:0 20px}.prog-label{display:none}.prog-sep{width:24px}}
+
+/* ── LAYOUT ── */
+.checkout-layout{max-width:1100px;margin:0 auto;padding:48px 60px 80px;display:grid;grid-template-columns:1fr 380px;gap:48px;position:relative;z-index:1}
+@media(max-width:960px){.checkout-layout{grid-template-columns:1fr;padding:32px 20px 60px}}
+
+/* ── SECTION BLOCKS ── */
+.c-section{margin-bottom:28px}
+.c-section-head{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid #e0e0e0}
+.c-section-icon{width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.c-section-icon svg{width:13px;height:13px;color:rgba(0,0,0,.4)}
+.c-section-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;color:#111}
+
+/* ── LOGGED IN USER ROW ── */
+.user-row{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#f5f5f5;border:1px solid #ddd;margin-bottom:22px}
+.user-row-avatar{width:36px;height:36px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:rgba(0,0,0,.6)}
+.user-row-info{flex:1}
+.user-row-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#111}
+.user-row-email{font-size:12px;color:rgba(0,0,0,.45);font-weight:300}
+.user-row-change{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.4);background:none;border:none;transition:color .2s}
+.user-row-change:hover{color:#111}
+
+/* ── FORM FIELDS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-grid.cols-1{grid-template-columns:1fr}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr}
+.c-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(0,0,0,.45);margin-bottom:7px}
+.c-field input,.c-field select,.c-field textarea{width:100%;padding:13px 16px;background:#fafafa;border:1px solid #ddd;color:#111;font-family:'Barlow',sans-serif;font-size:13px;font-weight:400;outline:none;transition:border .2s,background .2s;-webkit-appearance:none;resize:none}
+.c-field input:focus,.c-field select:focus,.c-field textarea:focus{border-color:#111;background:#fff}
+.c-field input::placeholder,.c-field textarea::placeholder{color:rgba(0,0,0,.25)}
+.c-field select option{background:#fff;color:#111}
+.c-field.full{grid-column:1/-1}
+
+/* ── SHIPPING METHODS ── */
+.ship-methods{display:flex;flex-direction:column;gap:10px}
+.ship-opt{display:flex;align-items:center;gap:16px;padding:14px 18px;border:1px solid #e0e0e0;cursor:pointer;transition:all .2s}
+.ship-opt:hover,.ship-opt.selected{border-color:#111;background:rgba(0,0,0,.02)}
+.ship-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,.25);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border .2s}
+.ship-opt.selected .ship-radio{border-color:#111}
+.ship-opt.selected .ship-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#111}
+.ship-info{flex:1}
+.ship-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#111}
+.ship-desc{font-size:12px;color:rgba(0,0,0,.45);font-weight:300;margin-top:2px}
+.ship-price{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;color:#111}
+
+/* ── TRANSEXPRESS DELIVERY BLOCK ── */
+.transexpress-block{border:1.5px solid #111;background:rgba(0,0,0,.02);overflow:hidden}
+.tx-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;gap:12px}
+.tx-logo-wrap{display:flex;align-items:center;gap:14px}
+.tx-truck-icon{width:32px;height:32px;color:#111;flex-shrink:0}
+.tx-brand{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;color:#111;line-height:1}
+.tx-tagline{font-size:11px;color:rgba(0,0,0,.4);font-weight:300;margin-top:2px;letter-spacing:.5px}
+.tx-active-badge{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:rgba(34,197,94,.1);color:#16a34a;border:1px solid rgba(34,197,94,.25);padding:5px 12px}
+.tx-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid #e0e0e0}
+.tx-info-item{padding:16px 20px;border-right:1px solid #e0e0e0}
+.tx-info-item:last-child{border-right:none}
+.tx-info-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:5px}
+.tx-info-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;color:#111}
+.tx-note{display:flex;align-items:flex-start;gap:8px;padding:14px 20px;font-size:12px;color:rgba(0,0,0,.5);font-weight:300;line-height:1.6;background:#fafafa}
+.tx-note strong{color:#111;font-weight:600}
+@media(max-width:600px){.tx-info-grid{grid-template-columns:1fr}.tx-info-item{border-right:none;border-bottom:1px solid #e0e0e0}.tx-info-item:last-child{border-bottom:none}}
+
+/* ── PAYMENT METHODS ── */
+.pay-methods{display:flex;flex-direction:column;gap:10px}
+.pay-opt{border:1px solid #e0e0e0;cursor:pointer;transition:all .2s}
+.pay-opt-head{display:flex;align-items:center;gap:16px;padding:16px 20px}
+.pay-opt:hover,.pay-opt.selected{border-color:#111}
+.pay-opt.selected{background:rgba(0,0,0,.02)}
+.pay-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,.25);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border .2s}
+.pay-opt.selected .pay-radio{border-color:#111}
+.pay-opt.selected .pay-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#111}
+.pay-info{flex:1}
+.pay-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#111}
+.pay-desc{font-size:12px;color:rgba(0,0,0,.45);font-weight:300;margin-top:2px}
+.pay-icon{font-size:1.5rem;flex-shrink:0}
+.pay-body{padding:0 20px 18px;display:none}
+.pay-opt.selected .pay-body{display:block}
+
+/* Bank transfer info box — eye-catching design */
+.bank-transfer-block{border:2px solid #111;overflow:hidden;background:#fff}
+.bank-transfer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#111;color:#fff;flex-wrap:wrap;gap:10px}
+.bank-transfer-header-left{display:flex;align-items:center;gap:12px}
+.bank-transfer-icon{font-size:1.6rem;flex-shrink:0}
+.bank-transfer-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.06em;color:#fff;line-height:1}
+.bank-transfer-subtitle{font-size:11px;color:rgba(255,255,255,.5);font-weight:300;margin-top:2px;letter-spacing:.5px}
+.bank-transfer-badge{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:4px 12px}
+.bank-transfer-body{padding:20px}
+.bank-detail-row{display:flex;align-items:baseline;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:13px;color:rgba(0,0,0,.55);font-weight:300;line-height:1.6}
+.bank-detail-row:last-of-type{border-bottom:none}
+.bank-detail-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.35);min-width:180px;flex-shrink:0}
+.bank-detail-value{font-weight:600;color:#111;word-break:break-all}
+.bank-transfer-divider{height:1px;background:rgba(0,0,0,.1);margin:16px 0}
+.bank-transfer-instructions{padding:0}
+.bank-transfer-instructions-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:#a30101;margin-bottom:20px;display:flex;align-items:center;gap:8px;margin-top: 20px;}
+.bank-transfer-instructions-title svg{width:14px;height:14px;color:rgba(138, 0, 0, 0.5)}
+.bank-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;font-size:13px;color:rgb(0, 0, 0);font-weight:300;line-height:1.7}
+.bank-step-num{width:24px;height:24px;border-radius:50%;background:#000000;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.bank-step strong{color:#b40000;font-weight:600}
+
+.bank-transfer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #cacaca44;
+  border: 1px solid #414141;
+  font-size: 12px;
+  color: #000;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.bank-transfer-note span {
+  display: block;
+}
+
+.bank-transfer-note strong {
+  color: #a80000;
+  font-weight: 600;
+}
+
+.bank-transfer-note svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media(max-width:600px){.bank-detail-row{flex-direction:column;gap:2px}.bank-detail-label{min-width:unset}.bank-transfer-header{padding:14px 16px}.bank-transfer-body{padding:16px}}
+
+/* ── DISCOUNT FIELD ── */
+.discount-row{display:flex;gap:0}
+.discount-row input{flex:1;padding:12px 16px;background:#fff;border:1px solid #ddd;border-right:none;color:#111;font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border .2s}
+.discount-row input:focus{border-color:#111}
+.discount-row input::placeholder{color:rgba(0,0,0,.28)}
+.btn-apply{padding:12px 20px;background:#111;color:#fff;border:1px solid #111;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s}
+.btn-apply:hover{background:#333;color:#fff}
+
+/* ── ORDER SUMMARY (right col) ── */
+.summary-panel{position:sticky;top:80px;align-self:start;background:#f5f5f5;border:1px solid #e0e0e0}
+.summary-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;padding:22px 24px 16px;border-bottom:1px solid #e0e0e0;color:#111}
+.summary-items{padding:4px 24px}
+.s-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.s-item:last-child{border-bottom:none}
+.s-item-img-wrap{position:relative;flex-shrink:0}
+.s-item-img{width:56px;height:68px;object-fit:cover;background:rgba(0,0,0,.06)}
+.s-item-qty{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#111;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.s-item-info{flex:1;min-width:0}
+.s-item-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;line-height:1.3;margin-bottom:3px;color:#111}
+.s-item-meta{font-size:11px;color:rgba(0,0,0,.45);font-weight:300}
+.s-item-price{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;text-align:right;flex-shrink:0;color:#111}
+.s-item-remove{background:none;border:none;cursor:pointer;padding:0;margin-left:4px;flex-shrink:0;color:rgba(0,0,0,.25);transition:color .2s;display:flex;align-items:center;justify-content:center;width:20px;height:20px}
+.s-item-remove:hover{color:#dc2626}
+.s-item-remove svg{width:14px;height:14px}
+.s-item-empty{padding:24px 0;text-align:center;font-size:13px;color:rgba(0,0,0,.35);font-weight:300}
+
+/* discount row in summary */
+.summary-discount-wrap{padding:16px 24px;border-top:1px solid #e0e0e0}
+
+/* totals */
+.summary-totals{padding:16px 24px;border-top:1px solid #e0e0e0}
+.s-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.s-row-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.45)}
+.s-row-val{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:rgba(0,0,0,.7)}
+.s-row-val.green{color:#4ade80}
+.s-divider{height:1px;background:#e0e0e0;margin:14px 0}
+.s-total-row{display:flex;justify-content:space-between;align-items:baseline}
+.s-total-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.6)}
+.s-total-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em;color:#111}
+
+/* place order btn */
+.btn-place{width:100%;padding:18px;background:#111;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border:none;margin:20px 24px 0;width:calc(100% - 48px);position:relative;overflow:hidden;transition:background .25s}
+.btn-place::before{content:'';position:absolute;inset:0;background:#333;transform:translateX(-101%);transition:transform .3s}
+.btn-place:hover{color:#fff}
+.btn-place:hover::before{transform:translateX(0)}
+.btn-place span{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-place:disabled{opacity:.5;cursor:not-allowed}
+
+.secure-badge{display:flex;align-items:center;justify-content:center;gap:7px;padding:14px 24px 20px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,.35)}
+.secure-badge svg{width:12px;height:12px}
+
+/* ── SUCCESS SCREEN ── */
+.success-page{display:none;text-align:center;padding:100px 40px 80px;position:relative;z-index:1;max-width:620px;margin:0 auto;animation:fadeUp .6s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.success-page.show{display:block}
+.success-check-ring{width:80px;height:80px;border-radius:50%;border:1.5px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:ringPop .5s .2s both}
+@keyframes ringPop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.success-check-ring svg{width:34px;height:34px;color:#111}
+.success-order-id{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,.35);margin-bottom:10px}
+.success-h{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,5vw,68px);letter-spacing:.04em;line-height:1;margin-bottom:14px;color:#111}
+.success-p{font-size:14px;color:rgba(0,0,0,.5);font-weight:300;line-height:1.8;margin-bottom:40px}
+.success-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-success-primary{padding:14px 32px;background:#111;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:2px solid #111;transition:background .2s}
+.btn-success-primary:hover{background:var(--dove-light)}
+.btn-success-outline{padding:14px 32px;background:transparent;color:rgba(0,0,0,.55);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:2px solid rgba(0,0,0,.2);transition:all .2s}
+.btn-success-outline:hover{border-color:#111;color:#111}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#111;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:13px 26px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer { background:var(--black); color:var(--white); padding:80px 60px 40px; }
+.footer-top {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:60px; margin-bottom:60px;
+}
+.footer-brand-name {
+  font-family:'Bebas Neue', sans-serif; font-size:2.2rem;
+  letter-spacing:.12em; color:var(--white); margin-bottom:8px;
+}
+.footer-tagline {
+  font-style:italic; font-weight:300; color:var(--dove);
+  font-size:14px; margin-bottom:20px;
+}
+.footer-socials { display:flex; gap:10px; }
+.social-btn {
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; transition:border-color .2s, background .2s;
+}
+.social-btn:hover { border-color:var(--white); background:rgba(255,255,255,.08); opacity:1; }
+.social-btn svg { width:16px; height:16px; color:var(--white); }
+.footer-col h4 {
+  font-family:'Barlow Condensed', sans-serif; font-size:11px;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dove); margin-bottom:24px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; font-weight:300; color:rgba(255,255,255,.7); text-decoration:none;
+  transition:color .2s;
+}
+.footer-col ul li a:hover { color:var(--white); opacity:1; }
+.footer-contact-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:14px; font-size:13px; font-weight:300; color:rgba(255,255,255,.7);
+}
+.footer-contact-item svg { width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--dove); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255,255,255,.3); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696; /* accent color */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ── RESPONSIVE ── */
+
+@media(max-width:960px){
+  .checkout-layout{grid-template-columns:1fr;padding:32px 20px 60px}
+  .summary-panel{position:static;margin-top:32px}
+}
+
+@media(max-width:768px){
+  .checkout-progress{padding:0 20px}
+  .checkout-layout{padding:24px 16px 60px}
+  .summary-panel{position:static}
+  footer{padding:60px 24px 30px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:40px}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid.cols-3{grid-template-columns:1fr 1fr}
+  .c-field input,.c-field select,.c-field textarea{padding:12px 14px;font-size:14px}
+  .c-field label{font-size:9px;letter-spacing:2px}
+  .ship-opt{padding:12px 14px;gap:12px}
+  .pay-opt-head{padding:14px 16px;gap:12px}
+  .c-section{margin-bottom:24px}
+  .c-section-title{font-size:20px}
+}
+
+@media(max-width:600px){
+  nav{padding:14px 16px;flex-wrap:wrap;gap:8px}
+  .nav-hamburger{display:flex}
+  .nav-secure{font-size:9px;letter-spacing:1.5px}
+  .nav-back-link{font-size:9px;letter-spacing:1.5px}
+  .user-row{flex-wrap:wrap;gap:10px;padding:12px 14px}
+  .user-row-change{width:100%;text-align:center;margin-top:4px}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+  .form-grid.cols-3{grid-template-columns:1fr}
+  .ship-opt{flex-wrap:wrap;gap:10px}
+  .pay-opt-head{flex-wrap:wrap;gap:10px}
+  .ship-price{width:100%;text-align:left}
+  .prog-step{padding:14px 0;gap:8px}
+  .prog-num{width:26px;height:26px;font-size:10px}
+  .prog-sep{width:16px}
+}
+
+/* ── HAMBURGER ── */
+.nav-hamburger{display:none;width:36px;height:36px;background:none;border:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:4px}
+.nav-hamburger span{display:block;width:20px;height:1.5px;background:#111;transition:all .3s}
+.nav-hamburger.active span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
+
+/* ── MOBILE NAV ── */
+.mobile-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;opacity:0;visibility:hidden;transition:all .3s}
+.mobile-nav-overlay.open{opacity:1;visibility:visible}
+.mobile-nav{position:fixed;top:0;right:0;width:300px;max-width:85vw;height:100vh;background:#fff;border-left:1px solid #e0e0e0;z-index:2001;transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);overflow-y:auto;display:flex;flex-direction:column}
+.mobile-nav.open{transform:translateX(0)}
+.mobile-nav-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #e0e0e0}
+.mobile-nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;color:#111}
+.mobile-nav-close{background:none;border:none;font-size:22px;color:#111;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.mobile-nav-links{list-style:none;padding:16px 0;flex:1}
+.mobile-nav-links li{border-bottom:1px solid #e0e0e0}
+.mobile-nav-links a{display:block;padding:16px 24px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.7);text-decoration:none;transition:background .2s,color .2s}
+.mobile-nav-links a:hover{background:rgba(0,0,0,.04);color:#111}
+
+@media(max-width:480px){
+  /* Form grids */
+  .form-grid{grid-template-columns:1fr}
+  .form-grid.cols-3{grid-template-columns:1fr}
+  .card-field-group{grid-template-columns:1fr}
+
+  /* KOKO pills */
+  .koko-installment-pills{flex-wrap:wrap}
+  .koko-pill{min-width:60px}
+
+  /* Shipping / payment options */
+  .ship-opt{flex-wrap:wrap;gap:10px}
+  .pay-opt-head{flex-wrap:wrap;gap:10px}
+  .ship-price{width:100%;text-align:left}
+
+  /* Place order button & summary spacing */
+  .btn-place{margin:16px 16px 0;width:calc(100% - 32px);padding:16px}
+  .summary-title{padding:18px 16px 12px}
+  .summary-items{padding:4px 16px}
+  .summary-totals{padding:16px}
+  .summary-discount-wrap{padding:16px}
+  .secure-badge{padding:12px 16px 16px}
+
+  /* Success screen */
+  .success-page{padding:80px 20px 60px}
+  .success-btns{flex-direction:column;align-items:center}
+  .success-h{font-size:clamp(36px,8vw,52px)}
+
+  /* Footer */
+  .footer-top{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+
+  /* Progress bar */
+  .checkout-progress{padding:0 12px}
+  .prog-step{padding:14px 0;gap:8px}
+  .prog-num{width:26px;height:26px;font-size:10px}
+  .prog-sep{width:16px}
+
+  /* Discount row */
+  .discount-row input{padding:10px 12px;font-size:12px}
+  .btn-apply{padding:10px 14px;font-size:10px}
+
+  /* Checkout layout tighter padding */
+  .checkout-layout{padding:20px 12px 48px}
+  .c-section-head{margin-bottom:16px;padding-bottom:12px}
+  .c-section-title{font-size:18px}
+  .c-field input,.c-field select,.c-field textarea{padding:11px 12px;font-size:13px}
+}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; }
+
+.footer-logo { max-width: 100%; }
+
+/* Mobile nav overlay scrollable */
+.mobile-nav-overlay.open { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+@media(max-width:360px){
+  .checkout-layout{padding:16px 8px 40px}
+  .c-field input,.c-field select,.c-field textarea{padding:10px 10px;font-size:12px}
+  .btn-place{padding:14px;font-size:11px;letter-spacing:2px}
+  .summary-title{font-size:18px}
+  .s-item-img{width:44px;height:54px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <img src="alive logo.png" alt="ALIVE" style="height:38px;width:auto;object-fit:contain;">
+  </a>
+  <div class="nav-links-center">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="shop.html" class="nav-link">Shop</a>
+    <a href="size-guide.html" class="nav-link">Size Guide</a>
+    <a href="index.html#offers" class="nav-link">Offers</a>
+    <a href="about.html" class="nav-link">About</a>
+    <a href="contact.html" class="nav-link">Contact</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-secure">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Secure Checkout
+    </div>
+    <a href="cart.html" class="nav-back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Bag
+    </a>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PROGRESS BAR -->
+<div class="checkout-progress">
+  <div class="progress-inner">
+    <div class="prog-step active" id="prog-1">
+      <div class="prog-num">1</div>
+      <div class="prog-label">Information</div>
+    </div>
+    <div class="prog-sep"></div>
+    <div class="prog-step" id="prog-2">
+      <div class="prog-num">2</div>
+      <div class="prog-label">Shipping</div>
+    </div>
+    <div class="prog-sep"></div>
+    <div class="prog-step" id="prog-3">
+      <div class="prog-num">3</div>
+      <div class="prog-label">Payment</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="checkout-layout" id="checkout-main">
+
+  <!-- ══ LEFT: FORM ══ -->
+  <div>
+
+    <!-- 1. CONTACT -->
+    <div class="c-section">
+      <div class="c-section-head">
+        <div class="c-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="c-section-title">Contact Information</div>
+      </div>
+
+      <!-- logged in user row -->
+      <div class="user-row" id="user-row" style="display:none">
+        <div class="user-row-avatar" id="ura">A</div>
+        <div class="user-row-info">
+          <div class="user-row-name" id="ur-name">User Name</div>
+          <div class="user-row-email" id="ur-email">email@email.com</div>
+        </div>
+        <button class="user-row-change" onclick="window.location.href='login.html'">Change</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="c-field"><label>First Name</label><input type="text" id="fn" placeholder="Alex" autocomplete="given-name"></div>
+        <div class="c-field"><label>Last Name</label><input type="text" id="ln" placeholder="Silva" autocomplete="family-name"></div>
+        <div class="c-field"><label>Email Address</label><input type="email" id="email" placeholder="your@email.com" autocomplete="email"></div>
+        <div class="c-field"><label>Phone Number</label><input type="tel" id="phone" placeholder="+94 7X XXX XXXX" autocomplete="tel"></div>
+      </div>
+    </div>
+
+    <!-- 2. SHIPPING ADDRESS -->
+    <div class="c-section">
+      <div class="c-section-head">
+        <div class="c-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="c-section-title">Shipping Address</div>
+      </div>
+      <div class="form-grid cols-1">
+        <div class="c-field"><label>Address Line 1</label><input type="text" id="addr1" placeholder="No. 12, Galle Road" autocomplete="address-line1"></div>
+        <div class="c-field"><label>Address Line 2 <span style="opacity:.5;font-size:9px">(Optional)</span></label><input type="text" id="addr2" placeholder="Apt, Floor, Building..." autocomplete="address-line2"></div>
+      </div>
+      <div class="form-grid cols-3">
+        <div class="c-field"><label>City</label><input type="text" id="city" placeholder="Colombo" autocomplete="address-level2"></div>
+        <div class="c-field"><label>Postal Code</label><input type="text" id="zip" placeholder="00300" autocomplete="postal-code"></div>
+        <div class="c-field"><label>Province</label>
+          <select id="province">
+            <option value="">Select...</option>
+            <option>Western</option><option>Central</option><option>Southern</option>
+            <option>North Western</option><option>Sabaragamuwa</option>
+            <option>North Central</option><option>Uva</option><option>Northern</option><option>Eastern</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid cols-1">
+        <div class="c-field"><label>Country</label><select id="country"><option>Sri Lanka</option></select></div>
+      </div>
+      <div style="margin-top:10px">
+        <label style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(0,0,0,.5);cursor:pointer">
+          <input type="checkbox" id="save-addr" style="width:14px;height:14px;accent-color:#fff">
+          Save this address to my account
+        </label>
+      </div>
+    </div>
+
+    <!-- 3. DELIVERY METHOD -->
+    <div class="c-section">
+      <div class="c-section-head">
+        <div class="c-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+        <div class="c-section-title">Delivery Method</div>
+      </div>
+      <!-- TransExpress single delivery block -->
+      <div class="transexpress-block">
+        <div class="tx-header">
+          <div class="tx-logo-wrap">
+            <svg class="tx-truck-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <div>
+              <div class="tx-brand">TransExpress</div>
+              <div class="tx-tagline">Island-wide Delivery · Sri Lanka</div>
+            </div>
+          </div>
+          <div class="tx-active-badge">✓ Active Courier</div>
+        </div>
+        <div class="tx-info-grid">
+          <div class="tx-info-item">
+            <div class="tx-info-label">Delivery Time</div>
+            <div class="tx-info-val">2–5 Working Days</div>
+          </div>
+          <div class="tx-info-item">
+            <div class="tx-info-label">Coverage</div>
+            <div class="tx-info-val">Island-Wide · All Provinces</div>
+          </div>
+          <div class="tx-info-item">
+            <div class="tx-info-label">Tracking</div>
+            <div class="tx-info-val">Real-time via Your Profile</div>
+          </div>
+        </div>
+        <div class="tx-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          A TransExpress tracking number will be assigned once your order is dispatched. You can track your delivery in real time from your <strong>Profile → Track from TransExpress</strong> page.
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. PAYMENT -->
+    <div class="c-section">
+      <div class="c-section-head">
+        <div class="c-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="c-section-title">Payment</div>
+      </div>
+
+      <div class="pay-methods">
+
+        <!-- BANK TRANSFER — Only Payment Method -->
+        <div class="pay-opt selected" onclick="selectPay(this,'bank')">
+          <div class="pay-opt-head">
+            <div class="pay-radio" style="border-color:#111"></div>
+            <div class="pay-info">
+              <div class="pay-name">Bank Transfer</div>
+              <div class="pay-desc">Direct deposit to our account</div>
+            </div>
+            <div class="pay-icon">🏦</div>
+          </div>
+          <div class="pay-body" style="display:block">
+            <div class="bank-transfer-block">
+              <div class="bank-transfer-header">
+                <div class="bank-transfer-header-left">
+                  <div class="bank-transfer-icon">🏦</div>
+                  <div>
+                    <div class="bank-transfer-title">People's Bank</div>
+                    <div class="bank-transfer-subtitle">Direct Bank Deposit</div>
+                  </div>
+                </div>
+                <div class="bank-transfer-badge">✓ Active</div>
+              </div>
+              <div class="bank-transfer-body">
+                <div class="bank-detail-row">
+                  <div class="bank-detail-label">Bank</div>
+                  <div class="bank-detail-value">People's Bank</div>
+                </div>
+                <div class="bank-detail-row">
+                  <div class="bank-detail-label">Account Holder</div>
+                  <div class="bank-detail-value">W.D.A.Wijenayake</div>
+                </div>
+                <div class="bank-detail-row">
+                  <div class="bank-detail-label">Account No</div>
+                  <div class="bank-detail-value">097200100054988</div>
+                </div>
+                <div class="bank-detail-row">
+                  <div class="bank-detail-label">Branch</div>
+                  <div class="bank-detail-value">Gangodawila</div>
+                </div>
+
+                <div class="bank-transfer-divider"></div>
+
+                <div class="bank-transfer-instructions">
+                  <div class="bank-transfer-instructions-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    Instructions — Follow These Steps
+                  </div>
+                  <div class="bank-step">
+                    <div class="bank-step-num">1</div>
+                    <div>Check the <strong>Order Summary</strong> to see the total amount you need to pay.</div>
+                  </div>
+                  <div class="bank-step">
+                    <div class="bank-step-num">2</div>
+                    <div>Make the bank payment and send your deposit slip to <strong style="color: #000000; font-size: 14px;">+94 71 010 0346</strong> on WhatsApp, along with your <strong>Order Number, Item Name, Color, and Size</strong>. This step is mandatory because the PayHere online payment option is currently unavailable.</div>
+                  </div>
+                  <div class="bank-step">
+                    <div class="bank-step-num">3</div>
+                    <div>After sending the payment details, click the black <strong>"Place Order"</strong> button to complete your purchase — if not, your order will not be valid.</div>
+                  </div>
+                </div>
+
+                <div class="bank-transfer-note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+
+                  <span>
+                    To track your order status and estimated delivery date, please check your <strong>Profile</strong> regularly.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end pay-methods -->
+    </div><!-- end c-section payment -->
+
+    <!-- 5. ORDER NOTES -->
+    <div class="c-section">
+      <div class="c-section-head">
+        <div class="c-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="c-section-title">Order Notes <span style="font-family:'Barlow',sans-serif;font-size:13px;letter-spacing:0;font-weight:300;color:rgba(0,0,0,.35)">(Optional)</span></div>
+      </div>
+      <div class="c-field"><label>Special Instructions</label>
+        <textarea id="order-notes" placeholder="e.g. Please call before delivery, leave at gate..." rows="3"></textarea>
+      </div>
+    </div>
+
+  </div><!-- end left col -->
+
+  <!-- ══ RIGHT: ORDER SUMMARY ══ -->
+  <div>
+    <div class="summary-panel">
+      <div class="summary-title">Order Summary</div>
+
+      <!-- items -->
+      <div class="summary-items" id="summary-items">
+        <div style="padding:20px 0;text-align:center;font-size:13px;color:rgba(0,0,0,.35);font-weight:300">Loading items...</div>
+      </div>
+
+      <!-- discount -->
+      <div class="summary-discount-wrap">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,.4);margin-bottom:8px">Discount Code</div>
+        <div class="discount-row">
+          <input type="text" id="disc-code" placeholder="Enter code (e.g. ALIVE10)">
+          <button class="btn-apply" onclick="applyDiscount()">Apply</button>
+        </div>
+        <div style="font-size:11px;color:#4ade80;margin-top:6px;display:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px" id="disc-msg"></div>
+      </div>
+
+      <!-- totals -->
+      <div class="summary-totals">
+        <div class="s-row"><span class="s-row-label">Subtotal</span><span class="s-row-val" id="s-sub">LKR 0</span></div>
+       <div class="s-row"><span class="s-row-label">Shipping · TransExpress</span><span class="s-row-val" id="s-ship">LKR 400</span></div>
+        <div class="s-row" id="s-disc-row" style="display:none"><span class="s-row-label">Discount</span><span class="s-row-val green" id="s-disc">-LKR 0</span></div>
+        <div class="s-divider"></div>
+        <div class="s-total-row">
+          <span class="s-total-label">Total</span>
+          <span class="s-total-val" id="s-total">LKR 0</span>
+        </div>
+      </div>
+
+      <!-- place order -->
+      <button class="btn-place" id="btn-place" onclick="placeOrder()">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Place Order
+        </span>
+      </button>
+
+      <div class="secure-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        256-bit SSL Secure Checkout
+      </div>
+    </div>
+  </div>
+
+</div><!-- end checkout-layout -->
+
+<!-- SUCCESS SCREEN -->
+<div class="success-page" id="success-page">
+  <div class="success-check-ring">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div class="success-order-id" id="s-order-id">Order #ALV-000000</div>
+  <h1 class="success-h">Order Placed!</h1>
+  <p class="success-p">Thank you for your order! We've received it and will start processing right away. A confirmation will be sent to your email shortly.</p>
+  <div class="success-btns">
+    <a href="index.html" class="btn-success-primary">Back to Home</a>
+    <a href="shop.html" class="btn-success-outline">Continue Shopping</a>
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-header">
+    <span class="mobile-nav-logo">ALIVE</span>
+    <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close">✕</button>
+  </div>
+  <ul class="mobile-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="cart.html">Back to Bag</a></li>
+  </ul>
+</div>
+
+<div id="toast"></div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-name">ALIVE</div>
+      <p class="footer-tagline">Wear it. Love it. Live it.</p>
+      <div class="footer-socials">
+        <a class="social-btn" href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>
+        </a>
+        <a class="social-btn" href="#" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </a>
+        <a class="social-btn" href="#" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.73a8.27 8.27 0 004.84 1.55V6.84a4.85 4.85 0 01-1.07-.15z"/></svg>
+        </a>
+        <a class="social-btn" href="#" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="shop.html?cat=new">New Arrivals</a></li>
+        <li><a href="shop.html?cat=men">Men</a></li>
+        <li><a href="shop.html?cat=women">Women</a></li>
+        <li><a href="shop.html?cat=unisex">Unisex</a></li>
+        <li><a href="shop.html?cat=formal">Formal Wear</a></li>
+        <li><a href="shop.html?cat=casual">Casual Wear</a></li>
+        <li><a href="shop.html?cat=trending">Trending</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="profile.html">My Account</a></li>
+        <li><a href="size-guide.html">Size Guide</a></li>
+        <li><a href="returns-policy.html">Returns Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-5.99-5.99 19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.72-.72a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>+94 71 010 0346</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>aliveclothing.connect@gmail.com</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Tuesday–Sunday: Open 24 hours</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by 
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+
+
+<script>
+/* ══════════════════════════════════
+   ALIVE — checkout.html
+══════════════════════════════════ */
+const DISCOUNT_CODES = { 'ALIVE10':500, 'FORMAL15':1500, 'BIG2K':2000, 'SAVE20':2000, 'SAVE10': '10pct' };
+let cart         = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+let checkoutData = JSON.parse(localStorage.getItem('alive-checkout') || '{}');
+let selectedShip = 400; // Fixed TransExpress rate
+let selectedPay  = 'bank';
+let discountAmt  = 0;
+
+/* ── load user ── */
+(function loadUser(){
+  const user = JSON.parse(localStorage.getItem('alive-user') || '{}');
+  if (user.email) {
+    const ur = document.getElementById('user-row');
+    ur.style.display = 'flex';
+    const [fn,...rest] = (user.name||'').split(' ');
+    document.getElementById('ur-name').textContent  = user.name || '';
+    document.getElementById('ur-email').textContent = user.email || '';
+    document.getElementById('ura').textContent = ((fn?.[0]||'')+(rest[0]?.[0]||'')).toUpperCase() || 'A';
+    document.getElementById('fn').value    = fn || '';
+    document.getElementById('ln').value    = rest.join(' ') || '';
+    document.getElementById('email').value = user.email || '';
+  }
+})();
+
+/* ── render summary items ── */
+function renderSummary() {
+  const items = cart.length ? cart : (checkoutData.items || []);
+  const sub   = items.reduce((s,c) => s + c.price * c.qty, 0);
+
+  // free shipping via TransExpress for orders over LKR 5,000
+  if (sub >= 5000) {
+    selectedShip = 0;
+  } else {
+    selectedShip = 400;
+  }
+
+  if (items.length === 0) {
+    document.getElementById('summary-items').innerHTML = '<div class="s-item-empty">Your bag is empty</div>';
+    updateTotals(0);
+    return;
+  }
+
+  document.getElementById('summary-items').innerHTML = items.map((item, idx) => `
+    <div class="s-item" data-idx="${idx}">
+      <div class="s-item-img-wrap">
+        <img class="s-item-img" src="${item.img||''}" alt="${item.name}" onerror="this.style.background='rgba(255,255,255,.06)'">
+        <div class="s-item-qty">${item.qty}</div>
+      </div>
+      <div class="s-item-info">
+        <div class="s-item-name">${item.name}</div>
+        <div class="s-item-meta">Size: ${item.size||'M'}${item.color ? ` · <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};border:1px solid rgba(0,0,0,.2);vertical-align:middle"></span> ${item.color}` : ''}</div>
+      </div>
+      <div class="s-item-price">LKR ${(item.price*item.qty).toLocaleString()}</div>
+      <button class="s-item-remove" onclick="removeItem(${idx})" title="Remove item" aria-label="Remove ${item.name}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+
+  updateTotals(sub);
+}
+
+function updateTotals(sub) {
+  if (sub === undefined) sub = (cart.length ? cart : (checkoutData.items||[])).reduce((s,c)=>s+c.price*c.qty,0);
+  const total = Math.max(0, sub + selectedShip - discountAmt);
+  document.getElementById('s-sub').textContent  = 'LKR ' + sub.toLocaleString();
+  document.getElementById('s-ship').textContent = selectedShip === 0 ? 'Free' : 'LKR ' + selectedShip.toLocaleString();
+  document.getElementById('s-total').textContent = 'LKR ' + total.toLocaleString();
+  if (discountAmt > 0) {
+    document.getElementById('s-disc-row').style.display = '';
+    document.getElementById('s-disc').textContent = '-LKR ' + discountAmt.toLocaleString();
+  }
+}
+
+/* ── payment select ── */
+function selectPay(el, type) {
+  document.querySelectorAll('.pay-opt').forEach(o => { o.classList.remove('selected'); o.querySelector('.pay-body').style.display='none'; });
+  el.classList.add('selected');
+  el.querySelector('.pay-body').style.display = 'block';
+  selectedPay = type;
+  // update prog
+  document.getElementById('prog-1').classList.remove('active'); document.getElementById('prog-1').classList.add('done');
+  document.getElementById('prog-2').classList.remove('active'); document.getElementById('prog-2').classList.add('done');
+  document.getElementById('prog-3').classList.add('active');
+}
+
+/* ── discount ── */
+function applyDiscount() {
+  const code = document.getElementById('disc-code').value.trim().toUpperCase();
+  const val  = DISCOUNT_CODES[code];
+  const msg  = document.getElementById('disc-msg');
+  if (!val) { msg.style.display='block'; msg.style.color='#f87171'; msg.textContent='Invalid or expired code.'; return; }
+
+  const sub = (cart.length ? cart : (checkoutData.items||[])).reduce((s,c)=>s+c.price*c.qty,0);
+  discountAmt = val === '10pct' ? Math.round(sub * 0.1) : val;
+  msg.style.display='block'; msg.style.color='#4ade80';
+  msg.textContent = `Discount applied — LKR ${discountAmt.toLocaleString()} off!`;
+  updateTotals(sub);
+  showToast('Discount applied!');
+}
+
+/* ── Build order data object ── */
+function buildOrderData(orderId, payMethod) {
+  const items = cart.length ? cart : (checkoutData.items||[]);
+  const sub   = items.reduce((s,c) => s + c.price*c.qty, 0);
+  const sessionUser = JSON.parse(localStorage.getItem('alive-user') || '{}');
+  const fn = document.getElementById('fn').value.trim();
+  const ln = document.getElementById('ln').value.trim();
+  const addr1 = document.getElementById('addr1').value.trim();
+  const addr2 = document.getElementById('addr2').value.trim();
+  const city  = document.getElementById('city').value.trim();
+  const zip   = document.getElementById('zip').value.trim();
+  const prov  = document.getElementById('province').value;
+  const email = document.getElementById('email').value.trim();
+  const notes = (document.getElementById('order-notes')?.value || '').trim();
+
+  return {
+    id: orderId || 'ALV-' + Date.now().toString().slice(-6),
+    date: new Date().toISOString(),
+    status: payMethod === 'bank' ? 'awaiting_payment' : 'ordered',
+    total: Math.max(0, sub + selectedShip - discountAmt),
+    subtotal: sub,
+    items,
+    clientName:  (fn + ' ' + ln).trim() || sessionUser.name || 'Guest',
+    clientEmail: email,
+    clientId:    sessionUser.id || sessionUser.email || email,
+    clientPhone: document.getElementById('phone').value.trim(),
+    address:     [addr1, addr2, city, zip, prov].filter(Boolean).join(', '),
+    city:        city,
+    province:    prov,
+    postalCode:  zip,
+    country:     'Sri Lanka',
+    shipping:    selectedShip,
+    discount:    discountAmt,
+    courier:     'TransExpress',
+    paymentMethod: payMethod,
+    paymentDate: new Date().toISOString(),
+    orderNotes:  notes,
+  };
+}
+
+/* ── Save order to all local storage keys & Supabase ── */
+async function saveOrderComplete(order) {
+  const etaDate = new Date(order.date);
+  etaDate.setDate(etaDate.getDate() + 4);
+  const etaStr = etaDate.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  order.eta = etaStr;
+
+  // ── STEP 1: Save to localStorage (always succeeds) ──
+  const profileOrders = JSON.parse(localStorage.getItem('alive-orders') || '[]');
+  profileOrders.push({
+    id: order.id, date: new Date(order.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+    status: order.status, items: order.items, total: order.total, address: order.address,
+    orderNotes: order.orderNotes || '',
+  });
+  localStorage.setItem('alive-orders', JSON.stringify(profileOrders));
+
+  const deliveries = JSON.parse(localStorage.getItem('alive-deliveries') || '[]');
+  deliveries.push({
+    ref: order.id, courier: 'TransExpress', tracking: 'Pending Dispatch', step: 0,
+    eta: etaStr, address: order.address, orderDate: order.date,
+    status: order.status === 'awaiting_payment' ? 'processing' : 'ordered',
+  });
+  localStorage.setItem('alive-deliveries', JSON.stringify(deliveries));
+
+  const adminOrders = JSON.parse(localStorage.getItem('alive-admin-orders') || '[]');
+  adminOrders.push(order);
+  localStorage.setItem('alive-admin-orders', JSON.stringify(adminOrders));
+
+  const fullOrders = JSON.parse(localStorage.getItem('alive-full-orders') || '[]');
+  fullOrders.push(order);
+  localStorage.setItem('alive-full-orders', JSON.stringify(fullOrders));
+
+  // ── STEP 2: Sync to Supabase in background (fire-and-forget) ──
+  // This must NOT block or throw — the order is already saved locally.
+  // If Supabase is down or RLS blocks it, the order is still in localStorage
+  // and the admin panel will pick it up on next sync.
+  if (typeof AliveDB !== 'undefined') {
+    // Fire-and-forget: we intentionally do NOT await this
+    syncOrderToSupabase(order).catch(function(e) {
+      console.error('[Checkout] Supabase background sync failed (order is saved locally):', e);
+    });
+  }
+  return order;
+}
+
+/* ── Background Supabase sync — never throws, always catches errors ── */
+async function syncOrderToSupabase(order) {
+  try {
+    // 1. Save or update the user in alive_users
+    let supabaseUserId = null;
+    try {
+      const userRow = await AliveDB.saveUser({
+        email: order.clientEmail,
+        name:  order.clientName,
+        phone: order.clientPhone,
+        role:  'customer',
+      });
+      supabaseUserId = userRow ? userRow.id : null;
+    } catch(userErr) {
+      console.warn('[Checkout] saveUser failed, continuing without user ID:', userErr);
+    }
+
+    // 2. Save client profile (name, address, phone etc.)
+    if (supabaseUserId) {
+      try {
+        await AliveDB.saveClientProfile({
+          id:          supabaseUserId,
+          email:       order.clientEmail,
+          full_name:   order.clientName,
+          phone:       order.clientPhone,
+          address:     order.address,
+          city:        order.city || '',
+          province:    order.province || '',
+          postal_code: order.postalCode || '',
+          country:     'Sri Lanka',
+        });
+      } catch(profileErr) {
+        console.warn('[Checkout] saveClientProfile failed, continuing:', profileErr);
+      }
+    }
+
+    // 3. Save the full order (order + items + payment + delivery)
+    try {
+      await AliveDB.saveFullOrder({
+        ...order,
+        clientEmail: order.clientEmail,
+        clientName:  order.clientName,
+        clientPhone: order.clientPhone,
+        userId:      supabaseUserId,
+        notes:       order.orderNotes || '',
+      });
+    } catch(orderErr) {
+      console.warn('[Checkout] saveFullOrder failed:', orderErr);
+    }
+
+    // 4. Save/update client profile with address from checkout
+    if (supabaseUserId) {
+      try {
+        await AliveDB.saveClientProfile({
+          id:          supabaseUserId,
+          email:       order.clientEmail,
+          full_name:   order.clientName,
+          phone:       order.clientPhone,
+          address:     order.address,
+          city:        order.city || '',
+          province:    order.province || '',
+          postal_code: order.postalCode || '',
+          country:     order.country || 'Sri Lanka',
+        });
+      } catch(profileErr2) {
+        console.warn('[Checkout] saveClientProfile (2nd) failed, continuing:', profileErr2);
+      }
+    }
+
+    console.log('[Checkout] Order + profile synced to Supabase:', order.id);
+  } catch(e) {
+    // Catch-all: never let this function throw
+    console.error('[Checkout] Supabase sync error (order saved locally):', e);
+  }
+}
+
+/* ── Show success screen ── */
+function showSuccessScreen(orderId) {
+  localStorage.removeItem('alive-cart');
+  localStorage.removeItem('alive-checkout');
+  document.getElementById('checkout-main').style.display = 'none';
+  document.querySelector('.checkout-progress').style.display = 'none';
+  const sp = document.getElementById('success-page');
+  sp.classList.add('show');
+  document.getElementById('s-order-id').textContent = 'Order #' + orderId;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── place order ── */
+async function placeOrder() {
+  // Bank transfer is the only payment method
+  selectedPay = 'bank';
+
+  // validate
+  if (!document.getElementById('fn').value.trim())   { showToast('First name is required'); return; }
+  if (!document.getElementById('ln').value.trim())   { showToast('Last name is required');  return; }
+  const email = document.getElementById('email').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Valid email required'); return; }
+  if (!document.getElementById('addr1').value.trim())  { showToast('Address is required');  return; }
+  if (!document.getElementById('city').value.trim())   { showToast('City is required');     return; }
+  if (!document.getElementById('zip').value.trim())    { showToast('Postal code required'); return; }
+  if (!document.getElementById('province').value)      { showToast('Select a province');    return; }
+
+  const btn = document.getElementById('btn-place');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Processing...';
+
+  try {
+    const order = buildOrderData(null, selectedPay);
+    await saveOrderComplete(order);
+    showSuccessScreen(order.id);
+  } catch(e) {
+    console.error('[Checkout] placeOrder error:', e);
+    showToast('Something went wrong. Please try again.');
+    btn.disabled = false;
+    btn.querySelector('span').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Place Order';
+  }
+}
+
+/* ── remove item from order summary ── */
+function removeItem(idx) {
+  const items = cart.length ? cart : (checkoutData.items || []);
+  const removed = items.splice(idx, 1)[0];
+  // sync back to the source array
+  if (cart.length) {
+    cart = items;
+    localStorage.setItem('alive-cart', JSON.stringify(cart));
+  } else {
+    checkoutData.items = items;
+    localStorage.setItem('alive-checkout', JSON.stringify(checkoutData));
+  }
+  showToast(removed.name + ' removed');
+  renderSummary();
+}
+
+/* ── toast ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show';
+  clearTimeout(t._tid); t._tid = setTimeout(()=>t.className='', 3000);
+}
+
+renderSummary();
+// Auto-select Bank Transfer payment (first option)
+  var firstPay = document.querySelector('.pay-opt');
+  if(firstPay){ selectPay(firstPay,'bank'); }
+
+/* ── MOBILE NAV ── */
+function openMobileNav(){document.getElementById('mobile-nav').classList.add('open');document.getElementById('mobile-nav-overlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeMobileNav(){document.getElementById('mobile-nav').classList.remove('open');document.getElementById('mobile-nav-overlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('nav-hamburger')?.addEventListener('click',function(){document.getElementById('mobile-nav').classList.contains('open')?closeMobileNav():openMobileNav()});
+document.getElementById('mobile-nav-close')?.addEventListener('click',closeMobileNav);
+document.getElementById('mobile-nav-overlay')?.addEventListener('click',closeMobileNav);
+document.querySelectorAll('.mobile-nav-links a').forEach(function(a){a.addEventListener('click',closeMobileNav)});
+</script>
+</body>
+</html>

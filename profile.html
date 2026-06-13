@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — ALIVE Clothing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0a0a0a;--white:#f8f8f8;
+  --dove:#b8b8b8;--dove-light:#e8e8e8;--dove-mid:#d0d0d0;
+  --dark-bg:#0d0d0d;--dark-surface:#161616;--dark-card:#1c1c1c;
+  --dark-border:rgba(255,255,255,0.07);--accent:#f8f8f8;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:rgba(0, 0, 0, 0.885);color:var(--white);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+a,button{cursor:pointer;text-decoration:none}
+
+/* ─── NAV ─────────────────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:1000;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 60px;
+  background:white;
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid white;
+  transition:padding .3s, box-shadow .3s;
+  width: 100%;
+}
+nav.scrolled { padding:12px 60px; box-shadow:0 2px 20px rgba(0,0,0,.06); }
+.logo img {
+  height: 40px;   /* adjust based on your navbar */
+  width: auto;
+  display: block;
+}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgb(0, 0, 0);position:relative;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:black}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1.5px;background:rgb(15, 15, 15);transition:width .3s}
+.nav-links a.active::after,.nav-links a:hover::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:18px}
+.nav-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;position:relative;color:rgb(0, 0, 0);transition:color .2s}
+.nav-icon:hover{color:rgb(0, 0, 0);}
+.nav-icon svg{width:19px;height:19px}
+.cart-badge{position:absolute;top:4px;right:4px;width:15px;height:15px;background:var(--black);color:var(--white);border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.btn-nav{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:var(--white);color:var(--black);border:none;padding:10px 22px;transition:background .2s}
+.btn-nav:hover{background:var(--dove-light)}
+@media(max-width:900px){nav{padding:16px 24px}.nav-links{display:none}.hamburger{display:flex!important}}
+
+/* ─── PAGE HERO ─────────────────────────────────────────────── */
+.profile-hero{padding:130px 60px 60px;position:relative;z-index:1;border-bottom:1px solid var(--dark-border);background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 100%)}
+.profile-hero-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.profile-left{display:flex;align-items:center;gap:28px}
+.profile-avatar{width:120px;height:120px;border-radius:50%;background:rgb(218, 218, 218);border:1.5px solid rgba(255, 255, 255, 0.478);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.06em;color:rgba(0, 0, 0, 0.873);flex-shrink:0;position:relative;overflow:hidden;}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-name-wrap .greeting{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255, 255, 255, 0.729); margin-top: 10px;}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,4vw,54px);letter-spacing:.04em;line-height:1; padding-top: 25px;}
+.profile-email{font-size:17px;color:rgba(255, 255, 255, 0.77);font-weight:300;margin-top:4px}
+.profile-right{display:flex;gap:12px;flex-wrap:wrap}
+.btn-outline-w{padding:11px 24px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:transparent;color:rgba(255,255,255,.6);border:1.5px solid rgba(255,255,255,.15);transition:all .2s}
+.btn-outline-w:hover{border-color:rgb(255, 255, 255);color:var(--white)}
+.btn-white{padding:11px 24px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--white);color:var(--black);border:1.5px solid var(--white);transition:all .2s}
+.btn-white:hover{background:white}
+
+/* ─── SAVE PROFILE BUTTON ─────────────────────────────────────── */
+.btn-save-profile{
+  padding:11px 24px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;background:#00ffcc;color:#0a0a0a;
+  border:1.5px solid #00ffcc;transition:all .2s;position:relative;overflow:hidden;
+}
+.btn-save-profile:hover{background:#00e6b8;border-color:#00e6b8}
+.btn-save-profile.saving{
+  background:#00ccaa;border-color:#00ccaa;color:#065545;pointer-events:none;
+}
+.btn-save-profile.saved{
+  background:transparent;color:#00ffcc;border-color:#00ffcc;pointer-events:none;
+}
+@keyframes savePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,255,204,.4)}
+  50%{box-shadow:0 0 0 10px rgba(0,255,204,0)}
+}
+.btn-save-profile:not(.saved):not(.saving){animation:savePulse 2s infinite}
+
+/* ─── UNSAVED BANNER ──────────────────────────────────────────── */
+.unsaved-banner{
+  position:fixed;top:0;left:0;right:0;z-index:10000;
+  background:linear-gradient(90deg,#ff3a3a,#ff6b3a);
+  color:#fff;padding:10px 20px;text-align:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  transform:translateY(-100%);transition:transform .4s ease;
+}
+.unsaved-banner.visible{transform:translateY(0)}
+.unsaved-banner .close-banner{
+  margin-left:16px;color:rgba(255,255,255,.7);cursor:pointer;
+  text-decoration:underline;font-weight:400;
+}
+.unsaved-banner .close-banner:hover{color:#fff}
+
+/* ─── STATS STRIP ───────────────────────────────────────────── */
+.profile-stats{max-width:1200px;margin:0 auto;padding:0 60px;display:grid;grid-template-columns:repeat(4,1fr);position:relative;z-index:1;margin-top: 60px; margin-bottom: 60px;}
+.stat-item{padding:28px 0;border-right:1px solid rgba(255, 255, 255, 0.826);text-align:center;transition:background .2s; border-left:1px solid rgba(255, 255, 255, 0.826); border-bottom:1px solid rgba(255, 255, 255, 0.826); border-top:1px solid rgba(255, 255, 255, 0.826)}
+.stat-item:last-child{border-right:1px solid rgba(255, 255, 255, 0.826); }
+.stat-item:hover{background:rgba(255, 255, 255, 0.889); color: black;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.04em;line-height:1;margin-bottom:4px}
+.stat-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255, 255, 255, 0.647)}
+/* force both text elements to turn black on hover */
+.stat-item:hover .stat-num,
+.stat-item:hover .stat-label {
+  color: black;
+}
+
+/* ─── MAIN LAYOUT ───────────────────────────────────────────── */
+.profile-layout{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+ } /* KEY FIX */
+/* IMPORTANT: remove sidebar behavior */
+.profile-nav {
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 40px;
+}
+
+/* ensure content doesn't sit beside nav */
+.profile-content {
+  width: 90%;
+  max-width: 900px;
+}
+
+/* ─── SIDEBAR NAV ────────────────────────────────────────────── */
+.profile-nav {
+  position: sticky;
+  top: 100px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+
+  background: var(--dark-card);
+  border: 1px solid var(--dark-border);
+  border-radius: 2px;
+
+  padding: 15px;
+  gap: 2px;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 45px;
+}
+
+.profile-nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* label stays fixed-style, not part of scroll */
+.profile-nav-label {
+  flex: 0 0 auto;
+
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+
+  color: rgba(0, 0, 0, 0.25);
+
+  padding: 0 14px;
+  white-space: nowrap;
+
+  display: flex;
+  align-items: center;
+}
+
+/* nav items */
+.profile-nav-item {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 14px;
+
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+
+  color: rgb(0, 0, 0);
+  background: transparent;
+  border: none;
+
+  border-radius: 2px;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: 0.2s ease;
+}
+
+.profile-nav-item svg {
+  width: 16px;
+  height: 16px;
+  opacity: .55;
+}
+
+/* hover */
+.profile-nav-item:hover {
+  color: rgba(0, 0, 0, 0.85);
+  background: rgba(134, 134, 134, 0.308);
+}
+
+.profile-nav-item:hover svg {
+  opacity: 1;
+}
+
+/* active */
+.profile-nav-item.active {
+  color: #000000c1;
+  background: rgba(194, 251, 255, 0.06);
+  box-shadow: inset 0 -2px 0 #747474;
+}
+
+.profile-nav-item.active svg {
+  opacity: 1;
+}
+
+/* divider */
+.nav-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 22px;
+  background: var(--dark-border);
+  margin: 0 6px;
+}
+
+/* danger */
+.profile-nav-item.danger {
+  color: rgba(255,90,90,.6);
+}
+
+.profile-nav-item.danger:hover {
+  background: rgba(255, 31, 31, 0.219);
+  color: rgba(255,90,90,.9);
+}
+
+
+
+/* ─── CONTENT PANELS ─────────────────────────────────────────── */
+.panel{display:none}
+.panel.active{display:block;animation:panelIn .3s both}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.06em;margin-bottom:6px}
+.panel-sub{font-size:13px;color:rgba(255, 255, 255, 0.84);font-weight:300;margin-bottom:32px;line-height:1.6}
+
+/* ─── ORDERS ─────────────────────────────────────────────────── */
+.order-card{border:1px solid rgba(255, 255, 255, 0.386);margin-bottom:16px;transition:border .2s}
+.order-card:hover{border-color:rgba(255, 255, 255, 0.93)}
+.order-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--dark-border);flex-wrap:wrap;gap:10px}
+.order-id{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.order-date{font-size:16px;color:rgba(255, 255, 255, 0.836);font-weight:300; margin-top: 10px;}
+.order-badge{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px}
+.badge-delivered{background:rgba(34,197,94,.12);color:#5fff9a;border:1px solid rgba(34,197,94,.25)}
+.badge-processing{background:rgba(251,191,36,.08);color:#ffd262;border:1px solid rgba(251,191,36,.2)}
+.badge-shipped{background:rgba(96,165,250,.08);color:#2989ff;border:1px solid rgba(96,165,250,.2)}
+.badge-cancelled{background:rgba(239,68,68,.08);color:#ff3a3a;border:1px solid rgba(239,68,68,.2)}
+.order-body{padding:20px 24px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.order-items-preview{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.order-item-thumb{width:182px;height:192px;object-fit:cover;background:rgba(255, 255, 255, 0.996)}
+.order-more{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.order-total{font-family:'Barlow',sans-serif;;font-size:22px;letter-spacing:.04em}
+.order-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:rgba(255, 255, 255, 0.151);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);transition:all .2s}
+.btn-sm:hover{background:rgba(255,255,255,.12);color:var(--white);border-color:rgba(255, 255, 255, 0.637)}
+
+/* ─── ORDER ITEM DETAIL (profile) ─────────────────── */
+.profile-order-item-detail {
+  display:flex; gap:10px; align-items:flex-start;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  padding:10px 12px; margin-bottom:8px;
+}
+.profile-order-item-img {
+  width:56px; height:68px; object-fit:cover; flex-shrink:0;
+  background:rgba(255,255,255,.08);
+}
+.profile-order-item-info { flex:1; min-width:0; }
+.profile-order-item-name {
+  font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700;
+  letter-spacing:.5px; text-transform:uppercase; color:rgba(255,255,255,.9);
+  margin-bottom:3px;
+}
+.profile-order-item-meta {
+  font-size:12px; color:rgba(255,255,255,.5); font-weight:300; line-height:1.5;
+}
+.profile-order-item-meta span { display:inline-block; margin-right:10px; }
+.profile-order-color-dot {
+  display:inline-block; width:12px; height:12px;
+  border-radius:50%; border:1px solid rgba(255,255,255,.2);
+  vertical-align:middle; margin-right:4px;
+}
+.profile-order-notes {
+  margin-top:10px; padding:10px 14px;
+  background:rgba(255,255,200,.06); border:1px solid rgba(255,255,200,.15);
+  font-size:12px; color:rgba(255,255,200,.7); line-height:1.5;
+}
+.profile-order-notes strong { color:rgba(255,255,200,.9); font-weight:700; }
+.empty-state{text-align:center;padding:64px 20px}
+.empty-state svg{width:48px;height:48px;color:rgba(255, 255, 255, 0.562);margin:0 auto 20px;display:block}
+.empty-state h4{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.06em;margin-bottom:8px;color:rgba(255, 255, 255, 0.73)}
+.empty-state p{font-size:13px;color:rgba(255, 255, 255, 0.608);font-weight:300;margin-bottom:24px}
+.btn-shop{display:inline-block;padding:13px 30px;background:var(--white);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;transition:background .2s}
+.btn-shop:hover{background:var(--dove-light)}
+
+/* ─── DELIVERY TRACKER ───────────────────────────────────────── */
+.delivery-section{margin-top:0}
+.delivery-card{border:1px solid rgba(255, 255, 255, 0.841);margin-bottom:16px;overflow:hidden}
+.delivery-head{padding:18px 22px;border-bottom:1px solid var(--dark-border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.delivery-order-ref{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.delivery-eta{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:burlywood}
+.delivery-body{padding:24px 22px}
+/* Progress bar */
+.delivery-progress{display:flex;align-items:center;margin-bottom:28px;position:relative}
+.delivery-progress::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:4px;background:rgba(161, 161, 161, 0.679);z-index:0}
+.delivery-progress-fill{position:absolute;top:14px;left:14px;height:4px;background: rgb(253, 211, 156);z-index:1;transition:width 1s ease}
+.dp-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;z-index:2}
+.dp-dot{width:40px;height:40px;border-radius:50%;border:4px solid rgba(255,255,255,.15);background:var(--dark-bg);display:flex;align-items:center;justify-content:center;margin-bottom:8px;transition:all .3s}
+.dp-dot.done{background:#00ffcc;border-color:white}
+.dp-dot.done svg{color: black}
+.dp-dot.current{border-color:rgba(255, 255, 255, 0.819);background:rgba(255,255,255,.08)}
+.dp-dot svg{width:18px;height:18px;color:rgb(255, 255, 255)}
+.dp-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);text-align:center}
+.dp-label.done{color:rgba(255, 255, 255, 0.853)}
+.dp-label.current{color:var(--white)}
+.delivery-info-row{display:flex;gap:52px;flex-wrap:wrap}
+.delivery-info-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255, 255, 255, 0.863);margin-bottom:4px; margin-top: 40px;}
+.delivery-info-value{font-size:13px;font-weight:300;color:rgba(255, 255, 255, 0.862)}
+
+/* ─── TRANSEXPRESS TRACKING ──────────────────────────────────── */
+.tx-track-card{border:1px solid rgba(255,255,255,.55);margin-bottom:18px;overflow:hidden;transition:border .2s}
+.tx-track-card:hover{border-color:rgba(255,255,255,.9)}
+.tx-track-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--dark-border);flex-wrap:wrap;gap:12px;background:rgba(255,255,255,.03)}
+.tx-track-logo-wrap{display:flex;align-items:center;gap:14px}
+.tx-track-truck{width:30px;height:30px;color:var(--white);flex-shrink:0}
+.tx-track-brand{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;color:var(--white);line-height:1}
+.tx-track-tagline{font-size:11px;color:rgba(255,255,255,.4);font-weight:300;margin-top:2px;letter-spacing:.5px}
+.tx-track-ref{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--white)}
+.tx-track-body{padding:24px}
+.tx-track-timeline{position:relative;padding-left:32px;margin-bottom:28px}
+.tx-track-timeline::before{content:'';position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:rgba(255,255,255,.1)}
+.tx-tl-item{position:relative;padding-bottom:22px}
+.tx-tl-item:last-child{padding-bottom:0}
+.tx-tl-dot{position:absolute;left:-32px;top:2px;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:var(--dark-bg);display:flex;align-items:center;justify-content:center;z-index:2}
+.tx-tl-dot.done{background:#00ffcc;border-color:rgba(255,255,255,.8)}
+.tx-tl-dot.done svg{color:#000}
+.tx-tl-dot.current{border-color:rgba(255,255,255,.8);background:rgba(255,255,255,.08);animation:txPulse 2s infinite}
+.tx-tl-dot svg{width:11px;height:11px;color:rgba(255,255,255,.5)}
+@keyframes txPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.15)}50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}}
+.tx-tl-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:3px}
+.tx-tl-title.done{color:rgba(255,255,255,.85)}
+.tx-tl-title.current{color:var(--white)}
+.tx-tl-date{font-size:12px;color:rgba(255,255,255,.35);font-weight:300}
+.tx-tl-date.done{color:rgba(255,255,255,.55)}
+.tx-track-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid rgba(255,255,255,.12);margin-top:8px}
+.tx-track-info-item{padding:16px 20px;border-right:1px solid rgba(255,255,255,.12)}
+.tx-track-info-item:last-child{border-right:none}
+.tx-track-info-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:5px}
+.tx-track-info-val{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px;color:var(--white)}
+.tx-track-info-val.pending{color:rgba(251,191,36,.8)}
+.tx-track-eta-banner{display:flex;align-items:center;gap:12px;padding:16px 24px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);margin-top:16px}
+.tx-track-eta-icon{width:20px;height:20px;color:rgba(255,255,255,.5);flex-shrink:0}
+.tx-track-eta-text{font-size:13px;color:rgba(255,255,255,.6);font-weight:300}
+.tx-track-eta-text strong{color:var(--white);font-weight:600}
+@media(max-width:600px){
+  .tx-track-info-grid{grid-template-columns:1fr}
+  .tx-track-info-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.12)}
+  .tx-track-info-item:last-child{border-bottom:none}
+  .tx-track-header{flex-direction:column;align-items:flex-start}
+}
+
+/* ─── ADDRESSES ──────────────────────────────────────────────── */
+.addresses-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.address-card{border:4px solid rgba(255, 255, 255, 0.652);padding:22px;position:relative;transition:border .2s}
+.address-card:hover{border-color:rgb(255, 255, 255)}
+.address-card.default{border-color:rgb(137, 77, 77)}
+.address-default-tag{position:absolute;top:14px;right:14px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:rgba(204, 102, 102, 0.305);color:rgba(255, 255, 255, 0.795);padding:3px 8px}
+.address-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px}
+.address-text{font-size:13px;color:rgba(255, 255, 255, 0.944);font-weight:300;line-height:1.7}
+.address-actions{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--dark-border)}
+.add-address-card{border:3px dashed rgba(255, 255, 255, 0.316);padding:40px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:none;transition:all .2s;color:rgba(255, 255, 255, 0.629);width:100%}
+.add-address-card:hover{border-color:rgba(255, 255, 255, 0.677);color:rgba(255, 255, 255, 0.962);background:rgba(255,255,255,.02)}
+.add-address-card svg{width:24px;height:24px}
+.add-address-card span{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+
+/* ─── FAVORITES ──────────────────────────────────────────────── */
+.favorites-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.fav-count-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255, 255, 255, 0.744)}
+.btn-clear-fav{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:3px solid rgba(255, 0, 0, 0.518);color:rgb(255, 255, 255);padding:7px 14px;transition:all .2s}
+.btn-clear-fav:hover{border-color:rgb(255, 0, 0);color:rgb(255, 255, 255);background-color: rgba(255, 0, 0, 0.77);}
+.favorites-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.fav-item{position:relative;border:2px solid var(--dark-border);transition:border .2s}
+.fav-item:hover{border-color:rgb(255, 255, 255)}
+.fav-img{width:100%;aspect-ratio:3/4;object-fit:cover;background:rgba(255,255,255,.06);display:block}
+.fav-rm{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(0,0,0,.7);border:none;color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;z-index:2}
+.fav-rm:hover{background:rgba(255, 0, 0, 0.8);color:var(--white)}
+.fav-heart-badge{position:absolute;top:10px;left:10px;width:28px;height:28px;background:rgb(255, 255, 255);border:1px solid rgba(255, 255, 255, 0.518);display:flex;align-items:center;justify-content:center}
+.fav-heart-badge svg{width:13px;height:13px;color:rgb(255, 255, 255);fill:rgba(0, 0, 0, 0.8)}
+.fav-info{padding:14px}
+.fav-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;line-height:1.3}
+.fav-price{font-family:'Barlow',sans-serif;font-size:16px;letter-spacing:.04em;margin-bottom:12px}
+.fav-price .orig{font-size:18px;font-family:'Barlow',sans-serif;font-weight:300;text-decoration:line-through;color:rgba(255, 255, 255, 0.867);margin-right:6px}
+.btn-add-fav{width:100%;padding:10px;background:rgba(255, 255, 255, 0.23);color:rgba(255, 255, 255, 0.822);border:none;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s}
+.btn-add-fav:hover{background:rgb(255, 255, 255);color:black}
+.fav-sizes{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:rgba(255, 255, 255, 0.718);margin-bottom:10px}
+
+/* ─── SETTINGS ────────────────────────────────────────────────── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:600px){.settings-grid{grid-template-columns:1fr}}
+.settings-grid.full{grid-template-columns:1fr}
+.s-field{margin-bottom:0}
+.s-field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255, 255, 255, 0.478);margin-bottom:8px}
+.s-field input,.s-field select{width:100%;padding:13px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255, 255, 255, 0.304);color:var(--white);font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border .2s;-webkit-appearance:none}
+.s-field input:focus,.s-field select:focus{border-color:rgba(255,255,255,.28);background:rgba(255, 255, 255, 0.168)}
+.s-field input::placeholder{color:rgba(255,255,255,.2)}
+.s-field select option{background:#1c1c1c}
+.s-section{margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid var(--dark-border)}
+.s-section:last-child{border-bottom:none}
+.s-section-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px}
+.btn-save{padding:13px 32px;background:var(--white);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;border:none;margin-top:8px;transition:background .2s}
+.btn-save:hover{background:var(--dove-light)}
+
+/* ─── WISHLIST (old) ─────────────────────────────────────────── */
+.wishlist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.wishlist-item{position:relative;border:1px solid rgba(255, 255, 255, 0.256);transition:border .2s}
+.wishlist-item:hover{border-color:rgb(255, 255, 255)}
+.wishlist-img{width:100%;aspect-ratio:3/4;object-fit:cover;background:rgba(255, 255, 255, 0.368);display:block}
+.wishlist-rm{position:absolute;top:10px;right:10px;width:30px;height:30px;background:rgba(75, 75, 75, 0.7);border:none;color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.wishlist-rm:hover{background:rgba(0,0,0,.9);color:var(--white)}
+.wishlist-info{padding:14px}
+.wishlist-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;line-height:1.3}
+.wishlist-price{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;margin-bottom:12px}
+.btn-add-wish{width:100%;padding:10px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);border:none;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s}
+.btn-add-wish:hover{background:rgba(255,255,255,.14);color:var(--white)}
+
+/* ─── ADDRESS MODAL ──────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--dark-card);border:1px solid var(--dark-border);padding:40px;max-width:540px;width:100%;position:relative;animation:panelIn .3s both;max-height:90vh;overflow-y:auto}
+.modal-close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(255, 255, 255, 0.636);font-size:20px;transition:color .2s;line-height:1}
+.modal-close-btn:hover{color:white}
+.modal-title-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.06em;margin-bottom:4px}
+.modal-sub-text{font-size:13px;color:rgba(255, 255, 255, 0.862);font-weight:300;margin-bottom:28px}
+.modal-box{color: #ffffff;}
+
+/* ─── CART SIDEBAR ─── */
+.cart-overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;opacity:0;pointer-events:none;transition:opacity .35s;backdrop-filter:blur(2px)}
+.cart-overlay-bg.open{opacity:1;pointer-events:all}
+.cart-sidebar{position:fixed;top:0;right:0;bottom:0;width:420px;background:var(--white);color:var(--black);z-index:8001;transform:translateX(100%);transition:transform .4s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.3)}
+.cart-sidebar.open{transform:translateX(0)}
+@media(max-width:480px){.cart-sidebar{width:100%}}
+.cart-header{padding:24px 28px;border-bottom:1px solid var(--dove-light);display:flex;align-items:center;justify-content:space-between}
+.cart-header-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.06em;color:var(--black)}
+.cart-close-btn{width:36px;height:36px;background:none;border:1.5px solid var(--dove-light);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.cart-close-btn:hover{background:var(--black);border-color:var(--black)}
+.cart-close-btn:hover svg{color:var(--white)}
+.cart-close-btn svg{width:16px;height:16px;color:var(--black)}
+.cart-body{flex:1;overflow-y:auto;padding:0 28px}
+.cart-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:60px 20px;text-align:center}
+.cart-empty-state svg{width:52px;height:52px;color:var(--dove-mid);margin-bottom:18px}
+.cart-empty-state h4{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.06em;color:var(--black);margin-bottom:8px}
+.cart-empty-state p{font-size:13px;color:var(--dove);font-weight:300;margin-bottom:20px}
+.cart-footer{padding:22px 28px;border-top:1px solid var(--dove-light)}
+.cart-footer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.cart-footer-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dove)}
+.cart-total-display{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.04em;color:var(--black)}
+.btn-cart-checkout{display:block;width:100%;padding:15px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;background:var(--black);color:var(--white);border:none;margin-top:10px;cursor:pointer}
+
+/* ─── TOAST ──────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--white);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 4px 30px rgba(0,0,0,.3)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/*--------------- FOOTER--------------------------------*/
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06); padding-bottom: 20px; padding-left: 10px;
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255, 255, 255, 0.46); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696; /* accent color */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ─── RESPONSIVE MEDIA QUERIES ─────────────────────────────── */
+@media(max-width:1024px){
+  .profile-nav{width:95%}
+  .profile-content{width:95%}
+}
+@media(max-width:768px){
+  .profile-nav{width:95%}
+  .profile-content{width:95%}
+  .order-item-thumb{width:100px;height:110px}
+  .profile-hero{padding:120px 24px 40px}
+  .profile-hero-inner{flex-direction:column;align-items:flex-start;gap:24px}
+  .profile-stats{margin-top:40px;margin-bottom:40px;padding:0 24px}
+  .favorites-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .order-card .order-body{flex-wrap:wrap}
+  .order-item-thumb{width:80px;height:96px}
+  .order-total{font-size:20px}
+  .settings-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .delivery-progress{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .dp-dot{width:32px;height:32px}
+  .dp-dot svg{width:14px;height:14px}
+  .dp-label{font-size:10px;letter-spacing:1px}
+  .delivery-info-row{gap:20px}
+  .profile-stats{grid-template-columns:1fr 1fr;padding:0 16px;margin-top:32px;margin-bottom:32px}
+  .stat-num{font-size:26px}
+  .stat-label{font-size:10px}
+  .profile-nav{width:96%;padding:10px;gap:2px}
+  .profile-content{width:96%}
+  .profile-hero{padding:100px 16px 32px}
+  .profile-avatar{width:80px;height:80px;font-size:36px}
+  .profile-name{font-size:clamp(28px,6vw,40px)}
+  .profile-email{font-size:14px}
+  .btn-outline-w,.btn-white{padding:9px 18px;font-size:10px}
+  .favorites-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .fav-name{font-size:14px}
+  .fav-price{font-size:14px}
+  .fav-info{padding:10px}
+  .order-item-thumb{width:70px;height:84px}
+}
+@media(max-width:480px){
+  .profile-nav{width:98%;padding:8px;gap:0}
+  .profile-nav-label{display:none}
+  .profile-nav-item{padding:8px 10px;font-size:13px;letter-spacing:1px}
+  .profile-nav-item svg{width:14px;height:14px}
+  .nav-divider{margin:0 3px}
+  .profile-content{width:98%}
+  .order-item-thumb{width:60px;height:72px}
+  .order-body{flex-direction:column;align-items:flex-start;gap:12px}
+  .order-total{font-size:18px}
+  .order-head{padding:14px 16px}
+  .order-body{padding:16px}
+  .order-id{font-size:18px;letter-spacing:1px}
+  .order-date{font-size:13px}
+  .order-badge{font-size:12px;padding:3px 8px}
+  .delivery-progress::before{left:10px;right:10px;top:11px}
+  .delivery-progress-fill{top:11px;left:10px}
+  .dp-dot{width:28px;height:28px}
+  .dp-dot svg{width:12px;height:12px}
+  .dp-label{font-size:9px;letter-spacing:.5px}
+  .favorites-grid{grid-template-columns:1fr;gap:10px}
+  .fav-name{font-size:14px}
+  .fav-price{font-size:13px}
+  .fav-rm{width:26px;height:26px;font-size:12px;top:8px;right:8px}
+  .btn-add-fav{font-size:13px;letter-spacing:1.5px;padding:8px}
+  footer{padding:30px 16px}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+  .footer-copy{font-size:11px}
+  .modal-box{padding:28px 16px;max-width:100%}
+  .settings-grid{grid-template-columns:1fr}
+  .s-field input,.s-field select{padding:11px 14px;font-size:13px}
+  .btn-save{padding:11px 24px;font-size:11px}
+  .panel-title{font-size:24px}
+  .panel-sub{font-size:12px;margin-bottom:24px}
+  .addresses-grid{grid-template-columns:1fr;gap:12px}
+  .address-card{padding:18px}
+  .cart-sidebar{width:100%}
+  .profile-hero{padding:90px 12px 28px}
+  .profile-avatar{width:64px;height:64px;font-size:28px}
+  .profile-name{font-size:clamp(24px,7vw,36px)}
+  .profile-email{font-size:13px}
+  .greeting{font-size:14px!important}
+  .btn-outline-w,.btn-white{padding:8px 14px;font-size:9px}
+}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; overflow-x: auto; display: block; }
+@media(max-width:900px){ .hamburger { display:flex!important; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════ NAV ══════════ -->
+<nav id="main-nav">
+  <a href="index.html" class="logo">
+    <img src="alive logo.png" alt="ALIVE Logo">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="size-guide.html">Size Guide</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li><a href="profile.html" class="active">Account</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="#" class="nav-icon" onclick="openCart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </a>
+  </div>
+  <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu" style="display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer">
+    <span style="display:block;width:22px;height:1.5px;background:rgb(0,0,0);transition:all .3s"></span>
+    <span style="display:block;width:22px;height:1.5px;background:rgb(0,0,0);transition:all .3s"></span>
+    <span style="display:block;width:22px;height:1.5px;background:rgb(0,0,0);transition:all .3s"></span>
+  </button>
+</nav>
+
+<div id="mobile-menu" style="display:none;position:fixed;inset:0;background:rgb(0,0,0);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:32px">
+  <button onclick="toggleMobileMenu()" style="position:absolute;top:24px;right:24px;background:none;border:none;color:white;font-size:1.5rem">✕</button>
+  <a href="index.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">Home</a>
+  <a href="shop.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">Shop</a>
+  <a href="size-guide.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">Size Guide</a>
+  <a href="about.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">About</a>
+  <a href="contact.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">Contact</a>
+  <a href="profile.html" onclick="toggleMobileMenu()" style="font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:white;text-decoration:none;letter-spacing:.08em">Account</a>
+</div>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="profile-hero">
+  <div class="profile-hero-inner">
+    <div class="profile-left">
+      <div class="profile-avatar" id="avatar-wrap">
+        <span id="avatar-el">AL</span>
+      </div>
+      <div class="profile-name-wrap">
+        <div class="greeting">Welcome Back!..</div>
+        <div class="profile-name" id="profile-name">ALIVE USER</div>
+        <div class="profile-email" id="profile-email">user@alive.lk</div>
+      </div>
+    </div>
+    <div class="profile-right">
+      <button class="btn-white" onclick="openCart()">View Bag</button>
+      <button class="btn-save-profile" id="btn-save-profile" onclick="saveProfileToCloud()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Click This to Save Your Profile
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── UNSAVED PROFILE WARNING BANNER ──────────────────────────── -->
+<div class="unsaved-banner" id="unsaved-banner">
+  Your profile changes are not saved yet! Please click "Click This to Save Your Profile" before leaving.
+  <span class="close-banner" onclick="dismissBanner()">Dismiss</span>
+</div>
+
+
+<!-- ══════════ MAIN LAYOUT ══════════ -->
+<div class="profile-layout">
+
+  <!-- SIDEBAR NAV -->
+  <nav class="profile-nav" style="background-color: rgb(255, 255, 255);">
+    <div class="profile-nav-label" style="color: rgb(0, 0, 0); font-size: larger;">My Account</div>
+    <button class="profile-nav-item active" id="nav-orders" onclick="showPanel('orders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>
+      Order History
+    </button>
+    <button class="profile-nav-item" id="nav-delivery" onclick="showPanel('delivery')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Delivery Status
+    </button>
+    <button class="profile-nav-item" id="nav-transexpress" onclick="showPanel('transexpress')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Track from TransExpress
+    </button>
+    <button class="profile-nav-item" id="nav-favorites" onclick="showPanel('favorites')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      Favourites
+    </button>
+    <button class="profile-nav-item" id="nav-addresses" onclick="showPanel('addresses')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Addresses
+    </button>
+    <div class="nav-divider"></div>
+    <button class="profile-nav-item" id="nav-settings" onclick="showPanel('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+    <button class="profile-nav-item danger" onclick="signOut()" style="color: red;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </nav>
+
+  <!-- CONTENT AREA -->
+  <div class="profile-content">
+
+    <!-- ══ ORDERS PANEL ══ -->
+    <div class="panel active" id="panel-orders">
+      <div class="panel-title">Order History</div>
+      <p class="panel-sub">A record of all your past purchases with ALIVE Clothing.</p>
+      <div id="orders-list"></div>
+    </div>
+
+    <!-- ══ DELIVERY STATUS PANEL ══ -->
+    <div class="panel" id="panel-delivery">
+      <div class="panel-title">Delivery Status</div>
+      <p class="panel-sub">Track your active shipments in real time. Updated by the admin.</p>
+      <div class="delivery-section" id="delivery-list"></div>
+    </div>
+
+    <!-- ══ TRANSEXPRESS TRACKING PANEL ══ -->
+    <div class="panel" id="panel-transexpress">
+      <div class="panel-title">Track from TransExpress</div>
+      <p class="panel-sub">Real-time delivery tracking powered by TransExpress — our island-wide courier partner in Sri Lanka.</p>
+      <div id="transexpress-list"></div>
+    </div>
+
+    <!-- ══ FAVOURITES PANEL ══ -->
+    <div class="panel" id="panel-favorites">
+      <div class="panel-title">My Favourites</div>
+      <p class="panel-sub">Items you've loved from our collection. Heart an item on the shop to save it here.</p>
+      <div class="favorites-toolbar">
+        <span class="fav-count-label" id="fav-count-label">0 items saved</span>
+        <button class="btn-clear-fav" onclick="clearAllFavourites()">Clear All</button>
+      </div>
+      <div class="favorites-grid" id="favorites-grid"></div>
+    </div>
+
+    <!-- ══ ADDRESSES PANEL ══ -->
+    <div class="panel" id="panel-addresses">
+      <div class="panel-title">Delivery Addresses</div>
+      <p class="panel-sub">Manage your saved addresses for faster checkout.</p>
+      <div class="addresses-grid" id="addresses-grid"></div>
+    </div>
+
+    <!-- ══ SETTINGS PANEL ══ -->
+    <div class="panel" id="panel-settings">
+      <div class="panel-title">Account Settings</div>
+      <p class="panel-sub">Manage your personal information and preferences.</p>
+
+      <div class="s-section">
+        <div class="s-section-title">Personal Information</div>
+        <div class="settings-grid">
+          <div class="s-field"><label>First Name</label><input type="text" id="s-fn" placeholder="First"></div>
+          <div class="s-field"><label>Last Name</label><input type="text" id="s-ln" placeholder="Last"></div>
+          <div class="s-field"><label>Email Address</label><input type="email" id="s-email" placeholder="your@email.com"></div>
+          <div class="s-field"><label>Phone Number</label><input type="tel" id="s-phone" placeholder="+94 7X XXX XXXX"></div>
+        </div>
+        <button class="btn-save" style="margin-top:18px" onclick="saveSettings()">Save Changes</button>
+      </div>
+
+      <div class="s-section">
+        <div class="s-section-title">Change Password</div>
+        <div class="settings-grid">
+          <div class="s-field"><label>Current Password</label><input type="password" placeholder="••••••••"></div>
+          <div class="s-field"><label>New Password</label><input type="password" placeholder="Min. 8 characters"></div>
+          <div class="s-field settings-grid full"><label>Confirm New Password</label><input type="password" placeholder="Repeat new password"></div>
+        </div>
+        <button class="btn-save" style="margin-top:18px" onclick="showToast('Password updated!')">Update Password</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ STATS ══════════ -->
+<div class="profile-stats">
+  <div class="stat-item">
+    <div class="stat-num" id="stat-orders">0</div>
+    <div class="stat-label">Orders</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat-active">0</div>
+    <div class="stat-label">Active Deliveries</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat-favorites">0</div>
+    <div class="stat-label">Favourites</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" id="stat-addresses">0</div>
+    <div class="stat-label">Addresses</div>
+  </div>
+</div>
+
+<!-- ══════════ ADDRESS MODAL ══════════ -->
+<div class="modal-overlay" id="address-modal">
+  <div class="modal-box">
+    <button class="modal-close-btn" onclick="closeAddressModal()">✕</button>
+    <div class="modal-title-text">Add Address</div>
+    <p class="modal-sub-text">Where should we deliver your orders?</p>
+    <div class="settings-grid" style="margin-bottom:14px">
+      <div class="s-field"><label>Full Name</label><input type="text" id="addr-name" placeholder="Alex Silva"></div>
+      <div class="s-field"><label>Phone</label><input type="tel" id="addr-phone" placeholder="+94 7X XXX XXXX"></div>
+    </div>
+    <div class="s-field" style="margin-bottom:14px"><label>Address Line 1</label><input type="text" id="addr-line1" placeholder="No. 12, Main Street"></div>
+    <div class="s-field" style="margin-bottom:14px"><label>Address Line 2 (Optional)</label><input type="text" id="addr-line2" placeholder="Apartment, floor..."></div>
+    <div class="settings-grid" style="margin-bottom:14px">
+      <div class="s-field"><label>City</label><input type="text" id="addr-city" placeholder="Colombo"></div>
+      <div class="s-field"><label>Postal Code</label><input type="text" id="addr-zip" placeholder="10000"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,.45);cursor:pointer;margin-bottom:22px">
+      <input type="checkbox" id="addr-default" style="width:14px;height:14px;accent-color:#fff">Set as default address
+    </label>
+    <button class="btn-save" onclick="saveAddress()">Save Address</button>
+  </div>
+</div>
+
+<!-- ══════════ CART SIDEBAR ══════════ -->
+<div class="cart-overlay-bg" id="cart-overlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cart-sidebar">
+  <div class="cart-header">
+    <div>
+      <div class="cart-header-title">Your Bag</div>
+    </div>
+    <button class="cart-close-btn" onclick="closeCart()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="cart-body" id="cart-body">
+    <div class="cart-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <h4>Your bag is empty</h4>
+      <p>Add items from the shop</p>
+      <a href="shop.html" style="display:inline-block;padding:11px 24px;background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Shop Now</a>
+    </div>
+  </div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-footer-row">
+      <span class="cart-footer-label">Total</span>
+      <span class="cart-total-display" id="cart-total-display">LKR 0</span>
+    </div>
+    <button class="btn-cart-checkout" onclick="window.location.href='cart.html'">Proceed to Checkout</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<footer>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by 
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ─── USER ─────────────────────────────────────────────────── */
+const defaultUser = { name:'Alive User', email:'user@alive.lk' };
+let user = JSON.parse(localStorage.getItem('alive-user') || JSON.stringify(defaultUser));
+
+function initUser() {
+  const name = user.name || 'Alive User';
+  document.getElementById('profile-name').textContent = name.toUpperCase();
+  document.getElementById('profile-email').textContent = user.email || '';
+  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+  document.getElementById('avatar-el').textContent = initials || 'AL';
+  const fn = name.split(' ');
+  if (document.getElementById('s-fn')) {
+    document.getElementById('s-fn').value = fn[0] || '';
+    document.getElementById('s-ln').value = fn.slice(1).join(' ') || '';
+    document.getElementById('s-email').value = user.email || '';
+  }
+
+  // FIX: After init, try to get the correct name from Supabase
+  (async function refreshNameFromCloud() {
+    if (!user.email || typeof AliveDB === 'undefined' || !AliveDB.getClient()) return;
+    try {
+      const supaUser = await AliveDB.getUserByEmail(user.email);
+      if (supaUser) {
+        const profile = await AliveDB.getClientProfile(supaUser.id);
+        const cloudName = (profile && profile.full_name) || (supaUser.data && supaUser.data.name) || '';
+        if (cloudName && cloudName !== user.name && cloudName !== user.email) {
+          // Update the name if Supabase has a better one
+          user.name = cloudName;
+          localStorage.setItem('alive-user', JSON.stringify(user));
+          document.getElementById('profile-name').textContent = cloudName.toUpperCase();
+          const newInitials = cloudName.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+          document.getElementById('avatar-el').textContent = newInitials || 'AL';
+          const nameParts = cloudName.split(' ');
+          if (document.getElementById('s-fn')) {
+            document.getElementById('s-fn').value = nameParts[0] || '';
+            document.getElementById('s-ln').value = nameParts.slice(1).join(' ') || '';
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('[Profile] Supabase name refresh failed:', e);
+    }
+  })();
+}
+
+/* ─── PANEL NAVIGATION ─────────────────────────────────────── */
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.profile-nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  const nav   = document.getElementById('nav-' + name);
+  if (panel) panel.classList.add('active');
+  if (nav)   nav.classList.add('active');
+}
+
+/* ─── ORDERS ────────────────────────────────────────────────── */
+// FIX: Load orders from Supabase first, then localStorage fallback
+let _profileOrdersCache = null;
+async function loadOrdersFromCloud() {
+  if (_profileOrdersCache) return _profileOrdersCache;
+  const email = user.email;
+  if (!email) {
+    _profileOrdersCache = JSON.parse(localStorage.getItem('alive-orders') || '[]');
+    return _profileOrdersCache;
+  }
+  // Try to find user in Supabase by email, then get their orders
+  if (typeof AliveDB !== 'undefined') {
+    try {
+      const supaUser = await AliveDB.getUserByEmail(email);
+      if (supaUser) {
+        const orders = await AliveDB.getOrdersByUser(supaUser.id);
+        if (orders && orders.length > 0) {
+          // For each order, also fetch items
+          const sb = AliveDB.getClient();
+          for (let order of orders) {
+            if (sb) {
+              const { data: items } = await sb.from('alive_order_items').select('*').eq('order_id', order.id);
+              order._items = items || [];
+            }
+          }
+          const converted = orders.map(o => ({
+            id: o.id,
+            _supabaseId: o.id,
+            date: o.created_at,
+            status: o.status,
+            total: o.total_amount,
+            orderNotes: o.notes || '',
+            items: (o._items || []).map(it => ({
+              name: it.item_name,
+              price: it.item_price,
+              qty: it.quantity,
+              size: it.size,
+              color: it.color,
+              img: it.image || it.img || '',  // FIX: Map both possible field names
+            })),
+          }));
+          // FIX: Try to fill in missing item images from product data
+          const products = JSON.parse(localStorage.getItem('alive-products') || localStorage.getItem('alive-admin-products') || '[]');
+          converted.forEach(order => {
+            (order.items || []).forEach(item => {
+              if (!item.img && item.name && products.length > 0) {
+                const match = products.find(p => p.name === item.name || p.name?.toLowerCase() === item.name?.toLowerCase());
+                if (match) {
+                  item.img = match.img || match.image || '';
+                }
+              }
+            });
+          });
+          localStorage.setItem('alive-orders', JSON.stringify(converted));
+          _profileOrdersCache = converted;
+          return _profileOrdersCache;
+        }
+      }
+    } catch (e) { console.warn('[Profile] Supabase load orders failed:', e); }
+  }
+  _profileOrdersCache = JSON.parse(localStorage.getItem('alive-orders') || '[]');
+  return _profileOrdersCache;
+}
+
+/* ─── LOAD DELIVERIES FROM SUPABASE ──────────────────────────── */
+let _profileDeliveriesCache = null;
+async function loadDeliveriesFromCloud() {
+  if (_profileDeliveriesCache) return _profileDeliveriesCache;
+  const email = user.email;
+  if (!email) {
+    _profileDeliveriesCache = JSON.parse(localStorage.getItem('alive-deliveries') || '[]');
+    return _profileDeliveriesCache;
+  }
+  // Try to find user in Supabase by email, then get their deliveries
+  if (typeof AliveDB !== 'undefined') {
+    try {
+      const supaUser = await AliveDB.getUserByEmail(email);
+      if (supaUser) {
+        const sb = AliveDB.getClient();
+        if (sb) {
+          const { data: deliveries, error } = await sb
+            .from('alive_order_deliveries')
+            .select('*')
+            .eq('user_id', supaUser.id)
+            .order('created_at', { ascending: false });
+          if (deliveries && deliveries.length > 0) {
+            const converted = deliveries.map(d => ({
+              ref: d.order_id || d.id,
+              courier: d.courier || 'TransExpress',
+              tracking: d.tracking_number || 'Pending Dispatch',
+              step: d.delivery_step || 0,
+              eta: d.estimated_arrival ? new Date(d.estimated_arrival).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : 'TBD',
+              address: d.delivery_address || '',
+              orderDate: d.created_at,
+              status: d.delivery_status || 'processing',
+            }));
+            localStorage.setItem('alive-deliveries', JSON.stringify(converted));
+            _profileDeliveriesCache = converted;
+            return _profileDeliveriesCache;
+          }
+        }
+      }
+    } catch (e) { console.warn('[Profile] Supabase load deliveries failed:', e); }
+  }
+  _profileDeliveriesCache = JSON.parse(localStorage.getItem('alive-deliveries') || '[]');
+  return _profileDeliveriesCache;
+}
+
+function renderOrders() {
+  // Start with localStorage for immediate render, then async update from Supabase
+  const orders = _profileOrdersCache || JSON.parse(localStorage.getItem('alive-orders') || '[]');
+  const el = document.getElementById('orders-list');
+  document.getElementById('stat-orders').textContent = orders.length;
+  if (orders.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/></svg>
+      <h4>No orders yet</h4>
+      <p>Your order history will appear here</p>
+      <a href="shop.html" class="btn-shop">Start Shopping</a>
+    </div>`;
+    return;
+  }
+  el.innerHTML = orders.map((o,i) => {
+    const badgeClass = {delivered:'badge-delivered',processing:'badge-processing',shipped:'badge-shipped',cancelled:'badge-cancelled'}[o.status] || 'badge-processing';
+    const statusLabel = o.status.charAt(0).toUpperCase() + o.status.slice(1);
+
+    // Build item detail rows with image, name, size, color
+    const itemDetails = (o.items || []).map(it => {
+      const itemImg = it.img || it.image || '';
+      const itemName = it.name || 'Item';
+      const itemSize = it.size || '';
+      const itemColor = it.color || '';
+      const itemQty = it.qty || 1;
+      const colorDot = itemColor
+        ? `<span class="profile-order-color-dot" style="background:${itemColor}" title="${itemColor}"></span>${itemColor}`
+        : '';
+      return `
+        <div class="profile-order-item-detail">
+          ${itemImg ? `<img class="profile-order-item-img" src="${itemImg}" alt="${itemName}" onerror="this.style.background='rgba(255,255,255,.08)'">` : `<div class="profile-order-item-img"></div>`}
+          <div class="profile-order-item-info">
+            <div class="profile-order-item-name">${itemName}</div>
+            <div class="profile-order-item-meta">
+              <span>Qty: ${itemQty}</span>
+              ${itemSize ? `<span>Size: ${itemSize}</span>` : ''}
+              ${colorDot ? `<span>Color: ${colorDot}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const notes = o.orderNotes || o.notes || '';
+
+    return `<div class="order-card">
+      <div class="order-head">
+        <div>
+          <div class="order-id">${o.id}</div>
+          <div class="order-date">${o.date}</div>
+        </div>
+        <span class="order-badge ${badgeClass}">${statusLabel}</span>
+      </div>
+      <div class="order-body" style="flex-direction:column;align-items:flex-start">
+        <div style="width:100%">
+          ${itemDetails}
+          ${notes ? `<div class="profile-order-notes"><strong>Order Notes:</strong> ${notes}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;margin-top:12px;width:100%;justify-content:space-between;flex-wrap:wrap">
+          <div class="order-total">LKR ${o.total.toLocaleString()}</div>
+          <div class="order-actions">
+            ${o.status !== 'cancelled' ? `<button class="btn-sm" onclick="showPanel('transexpress')">Track</button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── DELIVERY STATUS ───────────────────────────────────────── */
+function renderDeliveries() {
+  const deliveries = _profileDeliveriesCache || JSON.parse(localStorage.getItem('alive-deliveries') || '[]');
+  const el = document.getElementById('delivery-list');
+  document.getElementById('stat-active').textContent = deliveries.filter(d=>d.step<3).length;
+  if (deliveries.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <h4>No active deliveries</h4>
+      <p>Your shipments will be tracked here</p>
+      <a href="shop.html" class="btn-shop">Shop Now</a>
+    </div>`;
+    return;
+  }
+  const steps = ['Ordered','Processing','Shipped','Delivered'];
+  const stepIcons = [
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+  ];
+  el.innerHTML = deliveries.map(d => {
+    const pct = (d.step / 3) * 100;
+    const stepsHtml = steps.map((s,i) => {
+      const cls = i < d.step ? 'done' : i === d.step ? 'current' : '';
+      return `<div class="dp-step">
+        <div class="dp-dot ${cls}">${stepIcons[i]}</div>
+        <div class="dp-label ${cls}">${s}</div>
+      </div>`;
+    }).join('');
+    return `<div class="delivery-card">
+      <div class="delivery-head">
+        <div>
+          <div class="delivery-order-ref">${d.ref}</div>
+        </div>
+        <div class="delivery-eta">Est. Arrival: <strong>${d.eta}</strong></div>
+      </div>
+      <div class="delivery-body">
+        <div class="delivery-progress" style="margin-bottom:28px">
+          ${stepsHtml}
+          <div class="delivery-progress-fill" style="width:calc(${pct}% - 28px)"></div>
+        </div>
+        <div class="delivery-info-row">
+          <div class="delivery-info-item">
+            <div class="delivery-info-label">Courier</div>
+            <div class="delivery-info-value">${d.courier}</div>
+          </div>
+          <div class="delivery-info-item">
+            <div class="delivery-info-label">Tracking No.</div>
+            <div class="delivery-info-value">${d.tracking}</div>
+          </div>
+          <div class="delivery-info-item">
+            <div class="delivery-info-label">Delivering To</div>
+            <div class="delivery-info-value">${d.address}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── TRANSEXPRESS TRACKING ───────────────────────────────────── */
+function renderTransexpress() {
+  const deliveries = _profileDeliveriesCache || JSON.parse(localStorage.getItem('alive-deliveries') || '[]');
+  // Filter only TransExpress deliveries
+  const txDeliveries = deliveries.filter(d => d.courier === 'TransExpress');
+  const el = document.getElementById('transexpress-list');
+
+  if (txDeliveries.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <h4>No TransExpress shipments</h4>
+      <p>Once you place an order, your TransExpress delivery tracking will appear here.</p>
+      <a href="shop.html" class="btn-shop">Shop Now</a>
+    </div>`;
+    return;
+  }
+
+  const steps = ['Ordered','Processing','Shipped','Delivered'];
+  const stepDescriptions = [
+    'Your order has been received and confirmed.',
+    'Your order is being prepared for dispatch.',
+    'Your package is on its way via TransExpress.',
+    'Your package has been delivered successfully.'
+  ];
+  const stepIcons = [
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+  ];
+
+  // Map step index to approximate date
+  function getStepDate(orderDate, stepIdx) {
+    const d = new Date(orderDate);
+    const daysToAdd = [0, 1, 2, 4]; // Ordered: same day, Processing: +1, Shipped: +2, Delivered: +4
+    d.setDate(d.getDate() + daysToAdd[stepIdx]);
+    return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+  }
+
+  // Get status badge color
+  function getStatusInfo(step) {
+    if (step === 0) return { label: 'Order Confirmed', cls: 'pending' };
+    if (step === 1) return { label: 'In Progress', cls: 'pending' };
+    if (step === 2) return { label: 'In Transit', cls: '' };
+    if (step === 3) return { label: 'Delivered', cls: '' };
+    return { label: 'Unknown', cls: '' };
+  }
+
+  el.innerHTML = txDeliveries.map(d => {
+    const statusInfo = getStatusInfo(d.step);
+    const orderDate = d.orderDate || new Date().toISOString();
+
+    // Build timeline items
+    const timelineHtml = steps.map((s, i) => {
+      const cls = i < d.step ? 'done' : i === d.step ? 'current' : '';
+      const dotCls = i < d.step ? 'done' : i === d.step ? 'current' : '';
+      const dateStr = i <= d.step ? getStepDate(orderDate, i) : '—';
+      return `<div class="tx-tl-item">
+        <div class="tx-tl-dot ${dotCls}">${stepIcons[i]}</div>
+        <div class="tx-tl-title ${cls}">${s}</div>
+        <div class="tx-tl-date ${cls}">${i <= d.step ? dateStr : 'Pending'}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="tx-track-card">
+      <div class="tx-track-header">
+        <div class="tx-track-logo-wrap">
+          <svg class="tx-track-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <div>
+            <div class="tx-track-brand">TransExpress</div>
+            <div class="tx-track-tagline">Island-wide Delivery · Sri Lanka</div>
+          </div>
+        </div>
+        <div class="tx-track-ref">${d.ref}</div>
+      </div>
+      <div class="tx-track-body">
+        <div class="tx-track-timeline">
+          ${timelineHtml}
+        </div>
+        <div class="tx-track-info-grid">
+          <div class="tx-track-info-item">
+            <div class="tx-track-info-label">Tracking No.</div>
+            <div class="tx-track-info-val ${d.tracking === 'Pending Dispatch' ? 'pending' : ''}">${d.tracking}</div>
+          </div>
+          <div class="tx-track-info-item">
+            <div class="tx-track-info-label">Status</div>
+            <div class="tx-track-info-val ${statusInfo.cls}">${statusInfo.label}</div>
+          </div>
+          <div class="tx-track-info-item">
+            <div class="tx-track-info-label">Courier</div>
+            <div class="tx-track-info-val">TransExpress</div>
+          </div>
+        </div>
+        <div class="tx-track-eta-banner">
+          <svg class="tx-track-eta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div class="tx-track-eta-text">Estimated Arrival: <strong>${d.eta}</strong> · Delivering to ${d.address}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── FAVOURITES ─────────────────────────────────────────────── */
+function getFavourites() {
+  return JSON.parse(localStorage.getItem("alive-favourites")) || [];
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderFavourites();
+});
+
+function renderFavourites() {
+  const items = getFavourites();
+  const container = document.getElementById("favorites-grid");
+  const label = document.getElementById("fav-count-label");
+
+  if (!container) return;
+
+  document.getElementById('stat-favorites').textContent = items.length;
+  label.textContent = `${items.length} items saved`;
+
+  if (items.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <h4>No favourites yet</h4>
+      <p>Heart an item on the shop page to save it here</p>
+      <a href="shop.html" class="btn-shop">Browse Shop</a>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = items.map((item, i) => `
+    <div class="fav-item">
+      <img class="fav-img" src="${item.img || ''}" alt="${item.name}" onerror="this.style.background='rgba(255,255,255,.06)'">
+      <button class="fav-rm" onclick="removeFavourite(${i})" title="Remove">✕</button>
+      <div class="fav-heart-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </div>
+      <div class="fav-info">
+        <div class="fav-name">${item.name}</div>
+        <div class="fav-price">
+          ${item.original ? `<span class="orig">LKR ${item.original.toLocaleString()}</span>` : ''}
+          LKR ${item.price.toLocaleString()}
+        </div>
+        ${item.sizes ? `<div class="fav-sizes">${Array.isArray(item.sizes) ? item.sizes.join(' / ') : item.sizes}</div>` : ''}
+        <button class="btn-add-fav" onclick="addFavToCart(${i})">Add to Bag</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeFavourite(i) {
+  const items = getFavourites();
+  items.splice(i, 1);
+  localStorage.setItem('alive-favourites', JSON.stringify(items));
+  renderFavourites();
+  showToast('Removed from favourites');
+}
+
+function clearAllFavourites() {
+  if (!confirm('Clear all favourites?')) return;
+  localStorage.setItem('alive-favourites', '[]');
+  renderFavourites();
+  showToast('Favourites cleared');
+}
+
+function addFavToCart(i) {
+  const items = getFavourites();
+  const item = items[i];
+  if (!item) return;
+  let cart = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+  const existing = cart.find(c => c.id === item.id);
+  if (existing) existing.qty++;
+  else cart.push({ ...item, qty: 1, size: item.sizes?.[0] || 'M' });
+  localStorage.setItem('alive-cart', JSON.stringify(cart));
+  updateCartUI();
+  showToast(`${item.name} added to bag`);
+}
+
+/* Favourites start empty for new clients — items are added from the shop */
+
+/* ─── ADDRESSES ──────────────────────────────────────────────── */
+function getAddresses() { return JSON.parse(localStorage.getItem('alive-addresses') || '[]'); }
+function renderAddresses() {
+  const addrs = getAddresses();
+  const el = document.getElementById('addresses-grid');
+  document.getElementById('stat-addresses').textContent = addrs.length;
+  el.innerHTML = addrs.map((a,i) => `
+    <div class="address-card ${a.isDefault?'default':''}">
+      ${a.isDefault ? '<div class="address-default-tag">Default</div>' : ''}
+      <div class="address-name">${a.name}</div>
+      <div class="address-text">${a.line1}${a.line2?', '+a.line2:''}<br>${a.city}, ${a.zip}<br>Sri Lanka</div>
+      ${a.phone ? `<div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.3);font-weight:300">${a.phone}</div>` : ''}
+      <div class="address-actions">
+        <button class="btn-sm" onclick="deleteAddress(${i})">Delete</button>
+        ${!a.isDefault ? `<button class="btn-sm" onclick="setDefault(${i})">Set Default</button>` : ''}
+      </div>
+    </div>`).join('');
+  el.innerHTML += `<button class="add-address-card" onclick="openAddressModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>Add New Address</span>
+  </button>`;
+}
+function openAddressModal()  { document.getElementById('address-modal').classList.add('open'); }
+function closeAddressModal() { document.getElementById('address-modal').classList.remove('open'); }
+function saveAddress() {
+  const a = {
+    name:  document.getElementById('addr-name').value.trim(),
+    phone: document.getElementById('addr-phone').value.trim(),
+    line1: document.getElementById('addr-line1').value.trim(),
+    line2: document.getElementById('addr-line2').value.trim(),
+    city:  document.getElementById('addr-city').value.trim(),
+    zip:   document.getElementById('addr-zip').value.trim(),
+    isDefault: document.getElementById('addr-default').checked
+  };
+  if (!a.name || !a.line1 || !a.city) { showToast('Please fill required fields'); return; }
+  const addrs = getAddresses();
+  if (a.isDefault) addrs.forEach(x => x.isDefault = false);
+  addrs.push(a);
+  localStorage.setItem('alive-addresses', JSON.stringify(addrs));
+  closeAddressModal();
+  renderAddresses();
+  renderStats();
+  /* Sync default address to admin client record */
+  if (a.isDefault && user && user.email) {
+    const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+    const idx = clients.findIndex(c => c.email === user.email);
+    if (idx !== -1) {
+      clients[idx].address = a.line1 + (a.line2 ? ', ' + a.line2 : '') + ', ' + a.city;
+      if (a.phone) clients[idx].phone = clients[idx].phone || a.phone;
+      localStorage.setItem('alive-clients', JSON.stringify(clients));
+    }
+  }
+  showToast('Address saved!');
+}
+function deleteAddress(i) {
+  const addrs = getAddresses(); addrs.splice(i, 1);
+  localStorage.setItem('alive-addresses', JSON.stringify(addrs));
+  renderAddresses(); renderStats(); showToast('Address deleted');
+}
+function setDefault(i) {
+  const addrs = getAddresses();
+  addrs.forEach((a,idx) => a.isDefault = idx === i);
+  localStorage.setItem('alive-addresses', JSON.stringify(addrs));
+  renderAddresses(); showToast('Default address updated');
+}
+
+/* ─── STATS ──────────────────────────────────────────────────── */
+function renderStats() {
+  document.getElementById('stat-favorites').textContent = getFavourites().length;
+  document.getElementById('stat-addresses').textContent = getAddresses().length;
+}
+
+/* ─── SETTINGS ───────────────────────────────────────────────── */
+function saveSettings() {
+  const fn    = document.getElementById('s-fn').value.trim();
+  const ln    = document.getElementById('s-ln').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const phone = document.getElementById('s-phone') ? document.getElementById('s-phone').value.trim() : '';
+  const name  = (fn + ' ' + ln).trim();
+  const updated = { ...user, name, email, phone };
+  localStorage.setItem('alive-user', JSON.stringify(updated));
+  user = updated;
+  document.getElementById('profile-name').textContent = name.toUpperCase();
+  document.getElementById('profile-email').textContent = email;
+  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+  document.getElementById('avatar-el').textContent = initials || 'AL';
+
+  /* ── Sync profile edits to admin clients list ── */
+  (function syncToAdmin() {
+    const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+    const idx = clients.findIndex(c => c.email === (user.email || email));
+    const defaultAddr = JSON.parse(localStorage.getItem('alive-addresses') || '[]').find(a => a.isDefault);
+    if (idx !== -1) {
+      // Update existing client record
+      clients[idx].name    = name;
+      clients[idx].email   = email;
+      clients[idx].phone   = phone;
+      if (defaultAddr) clients[idx].address = defaultAddr.line1 + ', ' + defaultAddr.city;
+    } else {
+      // First profile edit before a record was created — create it now
+      clients.push({
+        id: 'CL-' + Date.now(),
+        name, email, phone,
+        address: defaultAddr ? defaultAddr.line1 + ', ' + defaultAddr.city : '',
+        joinedDate: new Date().toISOString()
+      });
+    }
+    localStorage.setItem('alive-clients', JSON.stringify(clients));
+    // Persist updated user to Supabase
+    if (typeof AliveSync !== 'undefined') {
+      const clientRecord = idx !== -1 ? clients[idx] : clients[clients.length - 1];
+      AliveSync.saveUser(clientRecord);
+    }
+  })();
+
+  showToast('Profile updated!');
+}
+
+/* ─── SIGN OUT ───────────────────────────────────────────────── */
+function signOut() {
+  localStorage.removeItem('aliveSession');
+  localStorage.removeItem('alive-user');
+  window.location.href = 'login.html';
+}
+
+/* ─── CART ───────────────────────────────────────────────────── */
+function updateCartUI() {
+  cart = JSON.parse(localStorage.getItem('alive-cart')) || [];
+  const count = cart.reduce((s,c) => s + c.qty, 0);
+  document.getElementById('cart-count').textContent = count;
+  const total = cart.reduce((s,c) => s + c.price * c.qty, 0);
+  const totalEl = document.getElementById('cart-total-display');
+  if (totalEl) totalEl.textContent = `LKR ${total.toLocaleString()}`;
+  const footer = document.getElementById('cart-footer');
+  if (footer) footer.style.display = cart.length > 0 ? 'block' : 'none';
+
+  const body = document.getElementById('cart-body');
+  if (!body) return;
+
+  if (cart.length === 0) {
+    body.innerHTML = `<div class="cart-empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <h4>Your bag is empty</h4>
+      <p>Add items from the shop</p>
+      <a href="shop.html" style="display:inline-block;padding:11px 24px;background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">Shop Now</a>
+    </div>`;
+  } else {
+    body.innerHTML = cart.map(item => `
+      <div style="display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--dove-light)">
+        <img src="${item.img || ''}" alt="${item.name}" style="width:70px;height:90px;object-fit:cover;background:var(--dove-light)" onerror="this.style.background='#e0e0e0'">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px;color:var(--black);margin-bottom:4px">${item.name}</div>
+          <div style="font-size:12px;color:var(--dove);margin-bottom:8px">Size: ${item.size || 'M'} · LKR ${item.price.toLocaleString()}</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="display:flex;align-items:center;border:1px solid var(--dove-mid)">
+              <button onclick="changeCartQty(${item.id},-1)" style="width:28px;height:28px;border:none;background:none;font-size:16px;color:var(--black);cursor:pointer">−</button>
+              <span style="min-width:28px;text-align:center;font-size:13px;font-weight:600;color:var(--black)">${item.qty}</span>
+              <button onclick="changeCartQty(${item.id},1)" style="width:28px;height:28px;border:none;background:none;font-size:16px;color:var(--black);cursor:pointer">+</button>
+            </div>
+            <div style="font-weight:700;font-size:14px;color:var(--black);margin-left:auto">LKR ${(item.price * item.qty).toLocaleString()}</div>
+            <button onclick="removeCartItem(${item.id})" style="background:none;border:none;color:var(--dove);font-size:16px;cursor:pointer;padding:0 4px">✕</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function changeCartQty(id, delta) {
+  let cart = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+  const item = cart.find(c => c.id === id);
+  if (item) { item.qty += delta; if (item.qty <= 0) cart = cart.filter(c => c.id !== id); }
+  localStorage.setItem('alive-cart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+function removeCartItem(id) {
+  let cart = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+  cart = cart.filter(c => c.id !== id);
+  localStorage.setItem('alive-cart', JSON.stringify(cart));
+  updateCartUI();
+  showToast('Item removed from bag');
+}
+function openCart()  { document.getElementById('cart-sidebar').classList.add('open'); document.getElementById('cart-overlay').classList.add('open'); }
+function closeCart() { document.getElementById('cart-sidebar').classList.remove('open'); document.getElementById('cart-overlay').classList.remove('open'); }
+
+/* ─── TOAST ──────────────────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ─── SCROLL NAV ─────────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+/* ─── INIT ───────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  async function _profileInit() {
+    initUser();
+    // FIX: Load orders AND deliveries from Supabase first
+    await loadOrdersFromCloud();
+    await loadDeliveriesFromCloud();
+    renderOrders();
+    renderDeliveries();
+    renderTransexpress();
+    renderFavourites();
+    renderAddresses();
+    updateCartUI();
+  }
+  if (typeof AliveSync !== 'undefined' && AliveSync.onReady) { AliveSync.onReady(_profileInit); } else { _profileInit(); }
+});
+
+/* ─── SAVE PROFILE TO CLOUD ────────────────────────────────── */
+let profileSaved = false;
+
+function saveProfileToCloud() {
+  const btn = document.getElementById('btn-save-profile');
+  if (btn.classList.contains('saving') || btn.classList.contains('saved')) return;
+
+  // First, save settings locally (same as saveSettings)
+  const fn    = document.getElementById('s-fn').value.trim();
+  const ln    = document.getElementById('s-ln').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const phone = document.getElementById('s-phone') ? document.getElementById('s-phone').value.trim() : '';
+  const name  = (fn + ' ' + ln).trim();
+  const updated = { ...user, name, email, phone };
+  localStorage.setItem('alive-user', JSON.stringify(updated));
+  user = updated;
+  document.getElementById('profile-name').textContent = name.toUpperCase();
+  document.getElementById('profile-email').textContent = email;
+  const initials = name.split(' ').map(w=>w[0]||'').slice(0,2).join('').toUpperCase();
+  document.getElementById('avatar-el').textContent = initials || 'AL';
+
+  // Update the admin clients list in localStorage (syncs to Supabase via alive-clients key)
+  (function syncToAdmin() {
+    const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+    const defaultAddr = JSON.parse(localStorage.getItem('alive-addresses') || '[]').find(a => a.isDefault);
+    const idx = clients.findIndex(c => c.email === email);
+    if (idx !== -1) {
+      clients[idx].name    = name;
+      clients[idx].email   = email;
+      clients[idx].phone   = phone;
+      if (defaultAddr) clients[idx].address = defaultAddr.line1 + ', ' + defaultAddr.city;
+    } else {
+      clients.push({
+        id: 'CL-' + Date.now(),
+        name, email, phone,
+        address: defaultAddr ? defaultAddr.line1 + ', ' + defaultAddr.city : '',
+        joinedDate: new Date().toISOString()
+      });
+    }
+    localStorage.setItem('alive-clients', JSON.stringify(clients));
+  })();
+
+  // Show saving state
+  btn.classList.add('saving');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Saving...';
+  // Add spin animation if not present
+  if (!document.getElementById('save-spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'save-spin-style';
+    style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+
+  // Save to Supabase via AliveSync
+  const savePromises = [];
+  if (typeof AliveSync !== 'undefined') {
+    // 1. Save to alive_users table
+    const clientRecord = {
+      id: user.id || 'CL-' + Date.now(),
+      name: name,
+      email: email,
+      phone: phone,
+    };
+    savePromises.push(AliveSync.saveUser(clientRecord));
+
+    // 2. Save to alive_client_profiles table
+    if (AliveSync.saveClientProfile) {
+      const defaultAddr = JSON.parse(localStorage.getItem('alive-addresses') || '[]').find(a => a.isDefault);
+      const profileRecord = {
+        id: user.id || 'CL-' + Date.now(),
+        full_name: name,
+        email: email,
+        phone: phone,
+        address: defaultAddr ? defaultAddr.line1 : '',
+        city: defaultAddr ? defaultAddr.city : '',
+        province: defaultAddr ? defaultAddr.province || '' : '',
+        postal_code: defaultAddr ? defaultAddr.postalCode || '' : '',
+        country: 'Sri Lanka',
+      };
+      savePromises.push(AliveSync.saveClientProfile(profileRecord));
+    }
+
+    // 3. Force-write the alive-clients key to Supabase
+    const clientsData = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+    savePromises.push(AliveSync.forceWrite('alive-clients', clientsData));
+
+    // 4. Force-write alive-user key
+    savePromises.push(AliveSync.forceWrite('alive-user', updated));
+  }
+
+  // Wait for all saves, then mark as saved
+  Promise.all(savePromises).then(() => {
+    profileSaved = true;
+    btn.classList.remove('saving');
+    btn.classList.add('saved');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><polyline points="20 6 9 17 4 12"/></svg> Profile Saved!';
+    // Hide the warning banner
+    document.getElementById('unsaved-banner').classList.remove('visible');
+    showToast('Profile saved to cloud & admin panel!');
+  }).catch(() => {
+    // Even if some saves fail, still mark locally
+    profileSaved = true;
+    btn.classList.remove('saving');
+    btn.classList.add('saved');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><polyline points="20 6 9 17 4 12"/></svg> Saved Locally';
+    document.getElementById('unsaved-banner').classList.remove('visible');
+    showToast('Profile saved locally (cloud sync may retry)');
+  });
+}
+
+/* ─── DISMISS BANNER ─────────────────────────────────────────── */
+function dismissBanner() {
+  document.getElementById('unsaved-banner').classList.remove('visible');
+}
+
+/* ─── BEFOREUNLOAD GUARD ─────────────────────────────────────── */
+// Prevent leaving the page without saving profile
+window.addEventListener('beforeunload', function (e) {
+  if (!profileSaved) {
+    // Show the warning banner to remind the user
+    document.getElementById('unsaved-banner').classList.add('visible');
+    // Standard way to trigger browser's leave confirmation dialog
+    e.preventDefault();
+    e.returnValue = 'Your profile has not been saved yet! Are you sure you want to leave?';
+    return e.returnValue;
+  }
+});
+
+// Also intercept navigation links on the page to prevent leaving without saving
+document.addEventListener('click', function (e) {
+  if (profileSaved) return; // Already saved, allow navigation
+  const link = e.target.closest('a[href]');
+  if (!link) return;
+  const href = link.getAttribute('href');
+  // Skip # links and javascript: links
+  if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+  // Skip cart-related clicks (they open sidebar, not navigate)
+  if (link.closest('.cart-sidebar') || link.closest('.cart-overlay-bg')) return;
+
+  // Show warning banner and prevent navigation
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('unsaved-banner').classList.add('visible');
+  showToast('Please save your profile first!');
+}, true); // Use capture phase to intercept before other handlers
+
+// Show the unsaved banner after a short delay on page load
+setTimeout(function() {
+  if (!profileSaved) {
+    document.getElementById('unsaved-banner').classList.add('visible');
+  }
+}, 2000);
+
+/* ─── MOBILE MENU ────────────────────────────────────────────── */
+function toggleMobileMenu(){const m=document.getElementById('mobile-menu');if(m.style.display==='none'||!m.style.display){m.style.display='flex'}else{m.style.display='none'}}
+</script>
+
+</body>
+</html>

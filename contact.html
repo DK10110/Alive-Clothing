@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — ALIVE Clothing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0a0a0a;--white:#f8f8f8;
+  --dove:#8f8f8f;--dove-light:#e8e8e8;--dove-mid:#d0d0d0;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden}
+a,button{cursor:pointer;text-decoration:none}
+
+/* ─── NOISE OVERLAY ─────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9997;opacity:.4
+}
+
+/* ─── NAV ───────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 60px;
+  background:rgba(248,248,248,.93);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  transition:padding .3s,box-shadow .3s;
+  width:100%
+}
+nav.scrolled{padding:12px 60px;box-shadow:0 2px 20px rgba(0,0,0,.06)}
+.logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1.5px;background:var(--black);transition:width .3s}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:20px}
+.nav-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--black)}
+.nav-icon svg{width:20px;height:20px}
+.cart-badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--black);color:var(--white);border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.btn-nav{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--black);color:var(--white);border:none;padding:10px 24px;transition:background .2s,color .2s}
+.btn-nav:hover{background:var(--dove);color:var(--black)}
+@media(max-width:900px){
+  nav{padding:16px 24px}
+  nav.scrolled{padding:10px 24px}
+  .nav-links{display:none}
+  .nav-actions{display:none}
+  .nav-hamburger{display:flex}
+}
+
+/* ─── PAGE HERO ──────────────────────────────────────────── */
+.contact-hero{
+  padding:160px 60px 80px;
+  text-align:center;
+  background:black;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  position:relative;overflow:hidden
+}
+.contact-hero::after{
+  content:'CONNECT';
+  position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(80px,14vw,200px);
+  letter-spacing:.06em;color:rgba(255, 255, 255, 0.04);white-space:nowrap;pointer-events:none
+}
+.hero-eyebrow{
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;color:var(--dove);
+  margin-bottom:20px;animation:fadeInUp .8s both
+}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,8vw,110px); color: #ffffff;
+  letter-spacing:.04em;line-height:.95;margin-bottom:24px;
+  animation:fadeInUp .8s .1s both
+}
+.hero-sub{
+  font-size:16px;font-weight:300;color:#c9c9c9;max-width:440px;margin:0 auto;
+  animation:fadeInUp .8s .2s both;line-height:1.7
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:768px){
+  .contact-hero{padding:140px 32px 60px}
+}
+@media(max-width:600px){.contact-hero{padding:130px 24px 60px}}
+
+/* ─── MAIN CONTENT ───────────────────────────────────────── */
+.contact-main{
+  max-width:1200px;margin:0 auto;padding:80px 60px 120px;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start
+}
+@media(max-width:900px){.contact-main{grid-template-columns:1fr;padding:60px 24px 80px;gap:60px}}
+@media(max-width:768px){.contact-main{padding:60px 32px 80px;gap:48px}}
+
+/* ─── LEFT: CONTACT INFO ─────────────────────────────────── */
+.section-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;color:var(--dove);margin-bottom:36px;
+  display:flex;align-items:center;gap:12px
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--dove-light)}
+
+.contact-block{margin-bottom:40px;padding-bottom:40px;border-bottom:1px solid var(--dove-light)}
+.contact-block:last-child{border-bottom:none;margin-bottom:0}
+.contact-block-icon{
+  width:44px;height:44px;background:var(--black);
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px
+}
+.contact-block-icon svg{width:20px;height:20px;color:var(--white)}
+.contact-block-label{
+  font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;color:var(--dove);margin-bottom:8px
+}
+.contact-block-value{
+  font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.04em;
+  line-height:1.1;margin-bottom:4px;
+  word-break:break-word
+}
+.contact-block-value a{color:var(--black);transition:opacity .2s}
+.contact-block-value a:hover{opacity:.6}
+.contact-block-sub{font-size:13px;font-weight:300;color:#888;line-height:1.6}
+
+/* ─── HOURS TABLE ────────────────────────────────────────── */
+.hours-grid{display:flex;flex-direction:column;gap:0}
+.hours-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--dove-light)
+}
+.hours-row:first-child{padding-top:0}
+.hours-row:last-child{border-bottom:none}
+.hours-day{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.hours-time{
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+  background:rgba(0,200,100,.1);color:#00a855;padding:4px 10px;
+  border:1px solid rgba(0,200,100,.2)
+}
+.hours-time.closed{background:rgba(0,0,0,.05);color:var(--dove);border-color:transparent}
+
+/* ─── SOCIAL SECTION ─────────────────────────────────────── */
+.socials-col{}
+.socials-intro{
+  font-size:15px;font-weight:300;color:#555;line-height:1.8;margin-bottom:40px
+}
+.social-card{
+  display:flex;align-items:center;gap:22px;
+  padding:22px 24px;border:1.5px solid var(--dove-light);
+  margin-bottom:14px;transition:all .3s;text-decoration:none;color:var(--black);
+  position:relative;overflow:hidden
+}
+.social-card::before{
+  content:'';position:absolute;inset:0;
+  background:var(--black);transform:translateX(-101%);transition:transform .35s cubic-bezier(.22,1,.36,1)
+}
+.social-card:hover::before{transform:translateX(0)}
+.social-card:hover{border-color:var(--black);opacity:1}
+.social-card:hover .social-card-name,
+.social-card:hover .social-card-handle,
+.social-card:hover .social-card-arrow,
+.social-card:hover .sc-icon-wrap{color:var(--white)}
+.sc-icon-wrap{
+  width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--dove-light);flex-shrink:0;position:relative;z-index:1;
+  transition:border-color .3s,color .3s
+}
+.sc-icon-wrap svg{width:24px;height:24px}
+.social-card-text{flex:1;position:relative;z-index:1}
+.social-card-name{
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;transition:color .3s
+}
+.social-card-handle{font-size:13px;font-weight:300;color:#888;transition:color .3s}
+.social-card-arrow{
+  font-size:22px;position:relative;z-index:1;color:var(--dove);
+  transition:color .3s,transform .3s
+}
+.social-card:hover .social-card-arrow{transform:translateX(4px)}
+
+/* tiktok brand color indicator */
+.social-card.tiktok .sc-icon-wrap{border-color:rgba(0,0,0,.15)}
+.social-card.instagram .sc-icon-wrap{border-color:rgba(0,0,0,.15)}
+.social-card.facebook .sc-icon-wrap{border-color:rgba(0,0,0,.15)}
+
+/* ─── DIVIDER BANNER ─────────────────────────────────────── */
+.divider-banner{
+  background:rgb(55, 55, 55);color:var(--white);padding:50px 60px;
+  text-align:center;position:relative;overflow:hidden
+}
+.divider-banner::before{
+  content:'';
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:500px;
+  height:200px;
+  background:url('alive logo.png') center/contain no-repeat;
+  opacity:.04;
+  pointer-events:none;
+  filter:brightness(0) invert(1);
+}
+.divider-banner p{
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;color:var(--dove);position:relative
+}
+.divider-banner h2{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,64px);
+  letter-spacing:.04em;margin:8px 0 20px;position:relative
+}
+.divider-banner a{
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;color:var(--black);
+  background:var(--white);padding:14px 36px;display:inline-block;
+  position:relative;transition:background .2s
+}
+.divider-banner a:hover{background:var(--dove-light)}
+
+/* ─── FOOTER ────────────────────────────────────────────── */
+footer { background:var(--black); color:var(--white); padding:80px 60px 40px; }
+.footer-top {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:60px; margin-bottom:60px;
+}
+.footer-logo{
+  width:230px;
+  max-width:100%;
+  height:auto;
+  margin-bottom:8px;
+  display:block;
+  filter: brightness(0) invert(1);
+  margin-top: 60px;
+}
+.footer-tagline {
+  font-style:italic; font-weight:300; color:var(--dove);
+  font-size:20px; margin-bottom:20px;
+}
+.footer-socials { display:flex; gap:10px; }
+.social-btn {
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; transition:border-color .2s, background .2s;
+}
+.social-btn:hover { border-color:var(--white); background:rgba(255,255,255,.08); opacity:1; }
+.social-btn svg { width:16px; height:16px; color:var(--white); }
+.footer-col h4 {
+  font-family:'Barlow Condensed', sans-serif; font-size:11px;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dove); margin-bottom:24px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; font-weight:300; color:rgba(255,255,255,.7); text-decoration:none;
+  transition:color .2s;
+}
+.footer-col ul li a:hover { color:var(--white); opacity:1; }
+.footer-contact-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:14px; font-size:13px; font-weight:300; color:rgba(255,255,255,.7);
+}
+.footer-contact-item svg { width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--dove); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255,255,255,.3); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@media(max-width:900px){
+  footer{padding:60px 24px 40px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:40px}
+}
+@media(max-width:768px){
+  footer{padding:60px 32px 40px}
+  .footer-top{gap:32px}
+}
+@media(max-width:540px){
+  .footer-top{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;gap:16px;text-align:center}
+}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--black);color:var(--white);
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  padding:14px 28px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/*whatsapp icon button */
+/* WHATSAPP FLOAT BUTTON */
+.whatsapp-float {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  z-index: 10000;
+  margin-bottom: 30px;
+}
+
+/* Text label */
+.whatsapp-label {
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 30px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+/* Icon circle */
+.whatsapp-icon {
+  width: 75px;
+  height: 75px;
+  background: #25D366;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+}
+
+.whatsapp-icon svg {
+  width: 35px;
+  height: 35px;
+}
+
+/* Hover effect */
+.whatsapp-float:hover .whatsapp-icon,
+.whatsapp-float:hover .whatsapp-label {
+  transform: scale(1.05);
+}
+
+/* Mobile: hide text, show only icon */
+@media (max-width: 600px) {
+  .whatsapp-label {
+    display: none;
+  }
+  .whatsapp-float { bottom: 16px; right: 16px; }
+  .whatsapp-icon { width: 48px; height: 48px; }
+  .whatsapp-icon svg { width: 22px; height: 22px; }
+}
+
+/* ── HAMBURGER ── */
+.nav-hamburger{display:none;width:40px;height:40px;background:none;border:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:6px}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--black);transition:all .3s}
+.nav-hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* ── MOBILE NAV ── */
+.mobile-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;opacity:0;visibility:hidden;transition:all .3s}
+.mobile-nav-overlay.open{opacity:1;visibility:visible}
+.mobile-nav{position:fixed;top:0;right:0;width:300px;max-width:85vw;height:100vh;background:var(--white);z-index:2001;transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);overflow-y:auto;display:flex;flex-direction:column}
+.mobile-nav.open{transform:translateX(0)}
+.mobile-nav-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.08)}
+.mobile-nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;color:var(--black)}
+.mobile-nav-close{background:none;border:none;font-size:22px;color:var(--black);cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.mobile-nav-links{list-style:none;padding:16px 0;flex:1}
+.mobile-nav-links li{border-bottom:1px solid rgba(0,0,0,.05)}
+.mobile-nav-links a{display:block;padding:16px 24px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);text-decoration:none;transition:background .2s}
+.mobile-nav-links a:hover{background:var(--dove-light)}
+.mobile-nav-links a.active{background:var(--dove-light);font-weight:900}
+.mobile-nav-actions{padding:20px 24px;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px}
+.mobile-nav-btn{display:block;text-align:center;padding:14px;background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:background .2s}
+.mobile-nav-btn:hover{background:#333}
+
+@media(max-width:600px){
+  .contact-hero{padding:120px 20px 50px}
+  .contact-main{padding:48px 20px 60px;gap:40px}
+  .contact-block-value{font-size:22px}
+  .social-card{padding:18px 16px;gap:16px}
+  .sc-icon-wrap{width:44px;height:44px;flex-shrink:0}
+  .sc-icon-wrap svg{width:20px;height:20px}
+  .social-card-name{font-size:13px;letter-spacing:1.5px}
+  .social-card-handle{font-size:12px}
+  .divider-banner{padding:40px 20px}
+  .divider-banner::before{width:200px;height:80px}
+}
+
+@media(max-width:480px){
+  .hours-row{flex-direction:column;align-items:flex-start;gap:4px}
+  .contact-block-value{font-size:20px}
+  .contact-block-value a br{display:none}
+  .social-card{flex-wrap:wrap;gap:12px}
+  .social-card-arrow{display:none}
+  .hours-day{font-size:12px}
+  .hours-time{font-size:11px;padding:3px 8px}
+}
+
+/* ─── VERY SMALL SCREEN BREAKPOINT ─── */
+@media(max-width:400px){
+  .contact-main{padding:36px 12px 48px;gap:28px}
+}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; overflow-x: auto; display: block; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ NAV ══════════ -->
+<nav id="main-nav">
+  <a href="index.html" class="logo">
+    <img src="alive logo.png" alt="ALIVE Logo">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="index.html#categories">Collections</a></li>
+    <li><a href="index.html#offers">Offers</a></li>
+    <li><a href="size-guide.html">Size Guide</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="#" class="nav-icon" title="Account" onclick="handleProfileClick(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </a>
+    <a href="#" class="nav-icon" onclick="openCartPage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </a>
+    <button class="btn-nav" onclick="openLogin()">Sign In</button>
+  </div>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="contact-hero">
+  <div class="hero-eyebrow">Get In Touch</div>
+  <h1 class="hero-title">Contact<br>Us</h1>
+  <p class="hero-sub">We're here around the clock. Reach out anytime — we'd love to hear from you.</p>
+</section>
+
+<!-- ══════════ MAIN CONTENT ══════════ -->
+<div class="contact-main">
+
+  <!-- LEFT: Contact Info -->
+  <div class="contact-info-col">
+    <div class="section-label">Contact Details</div>
+
+    <!-- Email -->
+    <div class="contact-block">
+      <div class="contact-block-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div class="contact-block-label">Email</div>
+      <div class="contact-block-value"><a href="mailto:aliveclothing.connect@gmail.com">aliveclothing.connect<br>@gmail.com</a></div>
+      <div class="contact-block-sub">We respond within a few hours.</div>
+    </div>
+
+    <!-- Phone -->
+    <div class="contact-block">
+      <div class="contact-block-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.43 9.63 19.79 19.79 0 01.36 1.04 2 2 0 012.35 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l.77-.77a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </div>
+      <div class="contact-block-label">Phone</div>
+      <div class="contact-block-value"><a href="tel:+94703872119">+94 70 387 2119</a></div>
+      <div class="contact-block-sub">Available during business hours for calls and WhatsApp.</div>
+    </div>
+
+    <!-- Business Hours -->
+    <div class="contact-block">
+      <div class="contact-block-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="contact-block-label">Business Hours</div>
+      <div style="margin-top:4px">
+        <div class="hours-grid">
+          <div class="hours-row">
+            <span class="hours-day">Monday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Tuesday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Wednesday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Thursday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Friday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Saturday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+          <div class="hours-row">
+            <span class="hours-day">Sunday</span>
+            <span class="hours-time">24 Hours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Socials -->
+  <div class="socials-col">
+    <div class="section-label">Follow Us</div>
+    <p class="socials-intro">Stay in the loop with new drops, exclusive offers, and behind-the-scenes content. Follow ALIVE on all our platforms.</p>
+
+    <!-- TikTok -->
+    <a href="https://www.tiktok.com/@alive.clothing_" target="_blank" rel="noopener" class="social-card tiktok">
+      <div class="sc-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.81a8.18 8.18 0 004.78 1.52V6.9a4.84 4.84 0 01-1.01-.21z"/></svg>
+      </div>
+      <div class="social-card-text">
+        <div class="social-card-name">TikTok</div>
+        <div class="social-card-handle">@aliveclothing</div>
+      </div>
+      <div class="social-card-arrow">→</div>
+    </a>
+
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/alive.clothing_/?hl=en" target="_blank" rel="noopener" class="social-card instagram">
+      <div class="sc-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </div>
+      <div class="social-card-text">
+        <div class="social-card-name">Instagram</div>
+        <div class="social-card-handle">@aliveclothing</div>
+      </div>
+      <div class="social-card-arrow">→</div>
+    </a>
+
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/p/ALIVE-clothing-61555518293175/" target="_blank" rel="noopener" class="social-card facebook">
+      <div class="sc-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+      </div>
+      <div class="social-card-text">
+        <div class="social-card-name">Facebook</div>
+        <div class="social-card-handle">@aliveclothing</div>
+      </div>
+      <div class="social-card-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════ DIVIDER BANNER ══════════ -->
+<div class="divider-banner">
+  <p>Ready to shop?</p>
+  <h2>Explore The Collection</h2>
+  <a href="shop.html">Shop Now</a>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <img src="alive logo.png" alt="ALIVE Logo" class="footer-logo">
+      <p class="footer-tagline">Wear it. Love it. Live it.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="shop.html?cat=new">New Arrivals</a></li>
+        <li><a href="shop.html?cat=men">Men</a></li>
+        <li><a href="shop.html?cat=women">Women</a></li>
+        <li><a href="shop.html?cat=unisex">Unisex</a></li>
+        <li><a href="shop.html?cat=formal">Formal Wear</a></li>
+        <li><a href="shop.html?cat=casual">Casual Wear</a></li>
+        <li><a href="shop.html?cat=trending">Trending</a></li>
+        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="size-guide.html">Size Guide</a></li>
+        <li><a href="returns-policy.html">Returns Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-5.99-5.99 19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.72-.72a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>+94 70 387 2119</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>aliveclothing.connect@gmail.com</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Monday–Sunday: Open 24 hours</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-header">
+    <span class="mobile-nav-logo">ALIVE</span>
+    <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close">✕</button>
+  </div>
+  <ul class="mobile-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="index.html#categories">Collections</a></li>
+    <li><a href="index.html#offers">Offers</a></li>
+    <li><a href="size-guide.html">Size Guide</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
+  </ul>
+  <div class="mobile-nav-actions">
+    <a href="#" class="mobile-nav-btn" onclick="handleProfileClick(event);closeMobileNav()">Account</a>
+    <a href="cart.html" class="mobile-nav-btn">Bag (<span class="mobile-cart-count">0</span>)</a>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// Cart from localStorage
+let cart = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+document.getElementById('cart-count').textContent = cart.reduce((s,c)=>s+c.qty,0);
+document.querySelectorAll('.mobile-cart-count').forEach(function(el){el.textContent=cart.reduce((s,c)=>s+c.qty,0)});
+
+function openCartPage() { window.location.href='cart.html'; }
+
+window.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ─── AUTH ───────────────────────────────────────────────── */
+function openLogin() {
+  window.location.href = 'login.html';
+}
+
+/* profile icon */
+function handleProfileClick(e) {
+  e.preventDefault();
+  const session = localStorage.getItem("aliveSession");
+  if (session === "1") {
+    window.location.href = "profile.html";
+  } else {
+    alert("Please login first!");
+    window.location.href = "login.html";
+  }
+}
+
+/* ── MOBILE NAV ── */
+function openMobileNav(){document.getElementById('mobile-nav').classList.add('open');document.getElementById('mobile-nav-overlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeMobileNav(){document.getElementById('mobile-nav').classList.remove('open');document.getElementById('mobile-nav-overlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('nav-hamburger')?.addEventListener('click',function(){document.getElementById('mobile-nav').classList.contains('open')?closeMobileNav():openMobileNav()});
+document.getElementById('mobile-nav-close')?.addEventListener('click',closeMobileNav);
+document.getElementById('mobile-nav-overlay')?.addEventListener('click',closeMobileNav);
+document.querySelectorAll('.mobile-nav-links a').forEach(function(a){a.addEventListener('click',closeMobileNav)});
+</script>
+
+<!-- WHATSAPP FLOAT BUTTON -->
+<a href="https://wa.me/94710100346" target="_blank" class="whatsapp-float">
+  <div class="whatsapp-label">Chat directly with us</div>
+  <div class="whatsapp-icon">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.52 3.48A11.82 11.82 0 0012.05 0C5.5 0 .22 5.28.22 11.83c0 2.08.54 4.11 1.56 5.9L0 24l6.43-1.67a11.83 11.83 0 005.62 1.43h.01c6.55 0 11.83-5.28 11.83-11.83 0-3.16-1.23-6.13-3.47-8.45zM12.06 21.5c-1.79 0-3.54-.48-5.07-1.38l-.36-.21-3.82.99 1.02-3.72-.24-.38a9.44 9.44 0 01-1.45-5.02c0-5.2 4.23-9.44 9.44-9.44 2.52 0 4.89.98 6.67 2.77a9.36 9.36 0 012.76 6.67c0 5.2-4.23 9.44-9.44 9.44zm5.18-7.06c-.28-.14-1.65-.81-1.91-.9-.26-.09-.45-.14-.64.14-.19.28-.73.9-.9 1.08-.17.19-.34.21-.62.07-.28-.14-1.18-.43-2.25-1.37-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.19-.28.28-.47.09-.19.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.47-.64-.48h-.55c-.19 0-.5.07-.76.36-.26.28-1 1-1 2.44s1.03 2.83 1.17 3.02c.14.19 2.02 3.09 4.9 4.33.69.3 1.23.48 1.65.61.69.22 1.32.19 1.82.12.56-.08 1.65-.67 1.88-1.32.23-.64.23-1.19.16-1.32-.07-.12-.26-.19-.55-.33z"/>
+    </svg>
+  </div>
+</a>
+</body>
+</html>

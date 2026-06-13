@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Returns Policy</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+  --black: #000;
+  --white: #fff;
+  --dove: #8b8b8b;
+}
+  body {
+    background: #fff;
+    color: #0a0a0a;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .hero {
+    background: #0a0a0a;
+    color: #fff;
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    position: absolute;
+    right: -30px;
+    top: -20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 160px;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .hero-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 8vw, 100px);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 15px;
+    color: #aaa;
+    max-width: 480px;
+    font-weight: 300;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid #0a0a0a;
+  }
+
+  .stat {
+    padding: 28px 40px;
+    border-right: 1px solid #0a0a0a;
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 300;
+  }
+
+  .main { max-width: 1100px; margin: 0 auto; padding: 0 60px 80px; }
+
+  /* Process steps */
+  .steps-section {
+    padding: 60px 0 48px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 36px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+  }
+
+  .step {
+    position: relative;
+    padding-right: 32px;
+  }
+
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 28px;
+    width: 16px;
+    height: 1px;
+    background: #ccc;
+  }
+
+  .step-circle {
+    width: 52px;
+    height: 52px;
+    border: 2px solid #0a0a0a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .step-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* Accordion policy sections */
+  .policy-section {
+    padding: 48px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .policy-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    margin-bottom: 28px;
+  }
+
+  .accordion-item {
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .accordion-item:last-child { border-bottom: 1px solid #e0e0e0; }
+
+  .accordion-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: #0a0a0a;
+    gap: 16px;
+  }
+
+  .accordion-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #0a0a0a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.25s, background 0.2s;
+    font-weight: 300;
+  }
+
+  .accordion-item.open .accordion-icon {
+    background: #0a0a0a;
+    color: #fff;
+    transform: rotate(45deg);
+  }
+
+  .accordion-body {
+    display: none;
+    padding: 0 0 24px;
+    font-size: 14px;
+    color: #555;
+    line-height: 1.75;
+    font-weight: 300;
+    max-width: 680px;
+  }
+
+  .accordion-item.open .accordion-body { display: block; }
+
+  .accordion-body ul {
+    list-style: none;
+    margin-top: 12px;
+  }
+
+  .accordion-body ul li {
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .accordion-body ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #bbb;
+  }
+
+  /* Eligibility table */
+  .elig-section {
+    padding: 48px 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .elig-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    margin-bottom: 28px;
+  }
+
+  .elig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .elig-card {
+    border: 1px solid;
+    padding: 24px 20px;
+  }
+
+  .elig-card.yes { border-color: #0a0a0a; }
+  .elig-card.no { border-color: #e0e0e0; }
+
+  .elig-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .elig-badge {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    font-weight: 500;
+  }
+
+  .elig-badge.yes { background: #0a0a0a; color: #fff; }
+  .elig-badge.no { background: #f0f0f0; color: #777; }
+
+  .elig-list {
+    list-style: none;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.5;
+  }
+
+  .elig-list li {
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+    font-weight: 300;
+  }
+
+  .elig-list.yes li::before { content: '✓'; position: absolute; left: 0; font-weight: 500; }
+  .elig-list.no li::before { content: '✕'; position: absolute; left: 0; color: #aaa; }
+
+  /* Contact CTA */
+  .contact-section {
+    padding: 56px 0 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .contact-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .contact-section p {
+    font-size: 14px;
+    color: #666;
+    font-weight: 300;
+    max-width: 420px;
+  }
+
+  .cta-btn {
+    background: #0a0a0a;
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    padding: 16px 36px;
+    white-space: nowrap;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+
+  .cta-btn:hover { background: #333; }
+
+  @media (max-width: 700px) {
+    .hero { padding: 56px 24px 48px; }
+    .main { padding: 0 24px 60px; }
+    .stats-bar { grid-template-columns: 1fr; }
+    .stat { border-right: none; border-bottom: 1px solid #0a0a0a; }
+    .stat:last-child { border-bottom: none; }
+    .steps { grid-template-columns: 1fr; gap: 28px; }
+    .step::after { display: none; }
+    .elig-grid { grid-template-columns: 1fr; }
+    .contact-section { grid-template-columns: 1fr; }
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────────────── */
+footer { background:var(--black); color:var(--white); padding:80px 60px 40px; }
+.footer-top {
+  display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:60px; margin-bottom:60px;
+}
+.footer-logo{
+  width:230px;   /* adjust size if needed */
+  max-width:100%;
+  height:auto;
+  margin-bottom:8px;
+  display:block;
+  filter: brightness(0) invert(1);
+  margin-top: 60px;
+}
+.footer-tagline {
+  font-style:italic; font-weight:300; color:var(--dove);
+  font-size:20px; margin-bottom:20px;
+}
+.footer-socials { display:flex; gap:10px; }
+.social-btn {
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; transition:border-color .2s, background .2s;
+}
+.social-btn:hover { border-color:var(--white); background:rgba(255,255,255,.08); opacity:1; }
+.social-btn svg { width:16px; height:16px; color:var(--white); }
+.footer-col h4 {
+  font-family:'Barlow Condensed', sans-serif; font-size:11px;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dove); margin-bottom:24px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; font-weight:300; color:rgba(255,255,255,.7); text-decoration:none;
+  transition:color .2s;
+}
+.footer-col ul li a:hover { color:var(--white); opacity:1; }
+.footer-contact-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:14px; font-size:13px; font-weight:300; color:rgba(255,255,255,.7);
+}
+.footer-contact-item svg { width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--dove); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255,255,255,.3); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696; /* accent color */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@media(max-width:900px){
+  footer{padding:60px 24px 30px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:32px}
+}
+@media(max-width:540px){
+  .footer-top{grid-template-columns:1fr;gap:28px}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+}
+
+@media(max-width:540px){
+  .hero{padding:48px 20px 40px}
+  .hero h1{font-size:clamp(44px,10vw,70px)}
+  .hero-sub{font-size:14px}
+  .main{padding:0 20px 48px}
+  .steps-section{padding:40px 0 36px}
+  .step-circle{width:44px;height:44px;font-size:18px;margin-bottom:12px}
+  .step-title{font-size:13px}
+  .step-desc{font-size:12px}
+  .policy-section{padding:36px 0}
+  .policy-section h2{font-size:30px;margin-bottom:20px}
+  .accordion-btn{padding:16px 0;font-size:14px}
+  .accordion-body{font-size:13px}
+  .elig-section{padding:36px 0}
+  .elig-section h2{font-size:30px;margin-bottom:20px}
+  .elig-card{padding:20px 16px}
+  .contact-section{grid-template-columns:1fr;gap:24px;padding:40px 0 0}
+  .contact-section h2{font-size:34px}
+  .cta-btn{width:100%;text-align:center}
+}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; }
+
+.footer-logo { max-width: 100%; }
+
+@media(max-width:400px){
+  .hero{padding:40px 16px 32px}
+  .hero h1{font-size:clamp(40px,10vw,60px)}
+  .main{padding:0 16px 40px}
+  .step-circle{width:40px;height:40px;font-size:16px}
+  .elig-card{padding:16px 12px}
+  .policy-section h2{font-size:26px}
+}
+
+/* WHATSAPP FLOAT BUTTON */
+.whatsapp-float {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  z-index: 10000;
+  margin-bottom: 30px;
+}
+
+/* Text label */
+.whatsapp-label {
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 30px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+/* Icon circle */
+.whatsapp-icon {
+  width: 75px;
+  height: 75px;
+  background: #25D366;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+}
+
+.whatsapp-icon svg {
+  width: 35px;
+  height: 35px;
+}
+
+/* Hover effect */
+.whatsapp-float:hover .whatsapp-icon,
+.whatsapp-float:hover .whatsapp-label {
+  transform: scale(1.05);
+}
+
+/* Mobile: hide text, show only icon */
+@media (max-width: 600px) {
+  .whatsapp-label {
+    display: none;
+  }
+  .whatsapp-float { bottom: 16px; right: 16px; }
+  .whatsapp-icon { width: 48px; height: 48px; }
+  .whatsapp-icon svg { width: 22px; height: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <p class="hero-label">Customer Care</p>
+  <h1>Returns<br>Policy</h1>
+  <p class="hero-sub">We want you to love what you ordered. If something isn't right, we make it easy to return.</p>
+  <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#ffffff;text-decoration:none;transition:color .2s">← Back to ALIVE</a>
+</div>
+
+<div class="main">
+
+  <!-- How it works -->
+  <section class="steps-section">
+    <p class="section-label">How It Works</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-circle">1</div>
+        <div class="step-title">Visit Our Shop</div>
+        <div class="step-desc">Bring your item along with proof of purchase to our store within 14 days of purchase.</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">2</div>
+        <div class="step-title">Choose Your Exchange</div>
+        <div class="step-desc">Browse our collection in-store and select another product of your choice to exchange for.</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">3</div>
+        <div class="step-title">Complete Exchange</div>
+        <div class="step-desc">We'll process your exchange right away. Any price difference will be settled at the counter.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Policy details accordion -->
+  <section class="policy-section">
+    <h2>Policy Details</h2>
+
+    <div class="accordion-item open">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        No Returns Policy
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        We do not accept returns on any items. All sales are final. If you are unsure about a purchase, we encourage you to visit our shop and try items on before buying. Our staff are happy to assist you in finding the right fit and style to ensure you leave satisfied with your purchase.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        Exchange Policy
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        You may exchange your item for another product of your choice by visiting our shop within 14 days of purchase. The item must be in its original condition with all tags still attached. Exchanges can only be done in-store — we do not offer online or mail-in exchanges at this time.
+        <ul>
+          <li>Exchanges must be made in person at our shop</li>
+          <li>Proof of purchase is required for all exchanges</li>
+          <li>Items must be unworn, unwashed, and in original condition</li>
+          <li>Original tags must still be attached</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        14-Day Exchange Window
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        All exchanges must be completed within 14 days of purchase. After 14 days, we will not be able to offer any exchanges or assistance. We recommend trying on your items as soon as possible after purchase and visiting our shop promptly if an exchange is needed. This time frame is strictly enforced and no exceptions can be made.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        Price Differences
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        If the item you wish to exchange for is priced higher than your original purchase, you will need to pay the difference at the time of exchange. If the new item costs less, store credit will be issued for the remaining balance. No cash refunds will be given for price differences.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        Sale & Promotional Items
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        Items purchased on sale or with promotional discounts follow the same exchange policy — they may be exchanged in-store within 14 days of purchase, subject to the same conditions. Items marked "Final Sale" are not eligible for exchange under any circumstances.
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-btn" onclick="toggleAccordion(this)">
+        Faulty or Incorrect Items
+        <span class="accordion-icon">+</span>
+      </button>
+      <div class="accordion-body">
+        If you receive a faulty or incorrect item, please bring it to our shop within 14 days of purchase along with proof of purchase. We will offer an exchange for a replacement or another product of your choice. Faults reported after 14 days will not be eligible for exchange or any form of assistance.
+      </div>
+    </div>
+  </section>
+
+  <!-- Eligibility -->
+  <section class="elig-section">
+    <h2>What Can Be Exchanged</h2>
+    <div class="elig-grid">
+      <div class="elig-card yes">
+        <div class="elig-header">
+          <span class="elig-badge yes">Eligible for Exchange</span>
+        </div>
+        <ul class="elig-list yes">
+          <li>Unworn items with original tags attached</li>
+          <li>Items in original, unwashed condition</li>
+          <li>Purchases within the 14-day window</li>
+          <li>Items accompanied by proof of purchase</li>
+          <li>Sale items (unless marked "Final Sale")</li>
+          <li>Faulty or incorrectly supplied items</li>
+        </ul>
+      </div>
+      <div class="elig-card no">
+        <div class="elig-header">
+          <span class="elig-badge no">Not Eligible for Exchange</span>
+        </div>
+        <ul class="elig-list no">
+          <li>Items after the 14-day exchange window</li>
+          <li>Worn, washed, or altered garments</li>
+          <li>Items without original tags</li>
+          <li>Items without proof of purchase</li>
+          <li>Items marked "Final Sale"</li>
+          <li>Any returns (no returns accepted on any items)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact CTA -->
+  <section class="contact-section">
+    <div>
+      <h2>Still Have<br>Questions?</h2>
+      <p>Visit our shop or get in touch with our team. We're here to help with any exchange-related enquiries.</p>
+    </div>
+    <a href="https://wa.me/94710100346" target="_blank" class="cta-btn">
+      Contact Us
+    </a>
+  </section>
+
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <img src="alive logo.png" alt="ALIVE Logo" class="footer-logo">
+      <p class="footer-tagline">Wear it. Love it. Live it.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="shop.html?cat=new">New Arrivals</a></li>
+        <li><a href="shop.html?cat=men">Men</a></li>
+        <li><a href="shop.html?cat=women">Women</a></li>
+        <li><a href="shop.html?cat=unisex">Unisex</a></li>
+        <li><a href="shop.html?cat=formal">Formal Wear</a></li>
+        <li><a href="shop.html?cat=casual">Casual Wear</a></li>
+        <li><a href="shop.html?cat=trending">Trending</a></li>
+        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="size-guide.html">Size Guide</a></li>
+        <li><a href="returns-policy.html">Returns Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-5.99-5.99 19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.72-.72a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>+94 70 387 2119</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>aliveclothing.connect@gmail.com</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Monday–Sunday: Open 24 hours</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by 
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+
+<script>
+  function toggleAccordion(btn) {
+    const item = btn.closest('.accordion-item');
+    item.classList.toggle('open');
+  }
+</script>
+
+<!-- WHATSAPP FLOAT BUTTON -->
+<a href="https://wa.me/94710100346" target="_blank" class="whatsapp-float">
+  <div class="whatsapp-label">Chat directly with us</div>
+  <div class="whatsapp-icon">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.52 3.48A11.82 11.82 0 0012.05 0C5.5 0 .22 5.28.22 11.83c0 2.08.54 4.11 1.56 5.9L0 24l6.43-1.67a11.83 11.83 0 005.62 1.43h.01c6.55 0 11.83-5.28 11.83-11.83 0-3.16-1.23-6.13-3.47-8.45zM12.06 21.5c-1.79 0-3.54-.48-5.07-1.38l-.36-.21-3.82.99 1.02-3.72-.24-.38a9.44 9.44 0 01-1.45-5.02c0-5.2 4.23-9.44 9.44-9.44 2.52 0 4.89.98 6.67 2.77a9.36 9.36 0 012.76 6.67c0 5.2-4.23 9.44-9.44 9.44zm5.18-7.06c-.28-.14-1.65-.81-1.91-.9-.26-.09-.45-.14-.64.14-.19.28-.73.9-.9 1.08-.17.19-.34.21-.62.07-.28-.14-1.18-.43-2.25-1.37-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.19-.28.28-.47.09-.19.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.47-.64-.48h-.55c-.19 0-.5.07-.76.36-.26.28-1 1-1 2.44s1.03 2.83 1.17 3.02c.14.19 2.02 3.09 4.9 4.33.69.3 1.23.48 1.65.61.69.22 1.32.19 1.82.12.56-.08 1.65-.67 1.88-1.32.23-.64.23-1.19.16-1.32-.07-.12-.26-.19-.55-.33z"/>
+    </svg>
+  </div>
+</a>
+</body>
+</html>

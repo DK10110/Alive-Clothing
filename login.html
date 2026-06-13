@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — ALIVE Clothing</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- Supabase for user data sync -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+
+<!-- EmailJS for sending verification codes -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<style>
+/* ─── VARIABLES ─────────────────────────────────────────── */
+:root{
+  --black:#0a0a0a; --white:#f8f8f8;
+  --dove:#b8b8b8; --dove-light:#e8e8e8; --dove-mid:#d0d0d0;
+  --dark-bg:#0d0d0d; --dark-surface:#161616; --dark-border:rgba(255,255,255,0.07);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'Barlow',sans-serif;background:var(--dark-bg);color:var(--white);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+
+/* noise */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.6}
+
+a{cursor:pointer;text-decoration:none}
+
+/* ─── TOPBAR ─────────────────────────────────────────────── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:22px 60px;border-bottom:1px solid rgba(248,248,248,.93); background:rgba(248,248,248,.93);}
+.logo img {
+  height: 40px;   /* adjust based on your navbar */
+  width: auto;
+  display: block;
+}
+.back-link{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(66, 66, 66, 0.516);display:flex;align-items:center;gap:8px;transition:color .2s}
+.back-link:hover{color:black}
+.back-link svg{width:15px;height:15px}
+@media(max-width:600px){.topbar{padding:18px 24px}}
+
+/* ─── MAIN WRAPPER ───────────────────────────────────────── */
+.auth-wrapper{flex:1;display:flex;position:relative;z-index:1;padding-top:80px;min-height:100vh}
+
+/* ─── LEFT VISUAL ────────────────────────────────────────── */
+.auth-visual{flex:1;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:70px;background:#0d0d0d}
+.visual-bg-logo{
+  position:absolute;
+  bottom:400px;
+  left: 60px;
+
+  width:clamp(150px, 85vw, 250px);
+
+  pointer-events:none;
+  user-select:none;
+  opacity: 0.6;
+
+  z-index:0;
+  filter: brightness(0) invert(1);
+}
+.visual-content{position:relative;z-index:1;}
+.visual-tagline{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,4.5vw,68px);line-height:.92;letter-spacing:-1px;margin-bottom:10px;}
+.visual-sub{font-size:13px;font-weight:300;color:rgba(255,255,255,.38);line-height:1.8;max-width:300px;margin-bottom:40px}
+.visual-perks{display:flex;flex-direction:column;gap:14px}
+.perk{display:flex;align-items:center;gap:12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.perk-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
+.visual-divider{position:absolute;top:0;right:0;bottom:0;width:1px;background:var(--dark-border)}
+@media(max-width:900px){.auth-visual{display:none}}
+
+/* ─── AUTH PANEL ─────────────────────────────────────────── */
+.auth-panel{width:500px;flex-shrink:0;background:var(--dark-surface);border-left:1px solid var(--dark-border);display:flex;flex-direction:column;justify-content:center;padding:60px 50px;position:relative;z-index:1;min-height:calc(100vh - 80px)}
+@media(max-width:900px){.auth-panel{width:100%;border-left:none;padding:50px 28px}}
+@media(max-width:600px){
+  .field-row{grid-template-columns:1fr;gap:0}
+  .otp-input{width:40px;height:48px;font-size:22px}
+  .otp-wrap{gap:6px}
+  .form-title{font-size:26px}
+  .btn-auth{padding:14px}
+}
+@media(max-width:480px){
+  .auth-panel{padding:40px 20px;min-height:auto}
+  .otp-input{width:36px;height:44px;font-size:20px}
+  .otp-wrap{gap:5px}
+  .step-dots{margin-bottom:28px}
+  .auth-tabs{margin-bottom:28px}
+}
+
+/* ─── STEP INDICATOR ─────────────────────────────────────── */
+.step-dots{display:flex;gap:6px;margin-bottom:36px}
+.step-dot{width:20px;height:3px;background:rgba(255,255,255,.12);transition:all .4s}
+.step-dot.active{background:var(--white);width:32px}
+.step-dot.done{background:rgba(255,255,255,.35)}
+
+/* ─── TABS ───────────────────────────────────────────────── */
+.auth-tabs{display:flex;gap:0;margin-bottom:36px;border-bottom:1px solid var(--dark-border)}
+.auth-tab{flex:1;padding:13px 0;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.25);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.auth-tab.active{color:var(--white);border-bottom-color:var(--white)}
+.auth-tab:hover:not(.active){color:rgba(255,255,255,.55)}
+
+/* ─── FORM SCREENS ───────────────────────────────────────── */
+.screen{display:none;animation:screenIn .3s ease both}
+.screen.active{display:block}
+@keyframes screenIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.form-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.06em;margin-bottom:6px}
+.form-sub{font-size:13px;font-weight:300;color:rgba(255,255,255,.38);margin-bottom:28px;line-height:1.6}
+.form-sub strong{color:rgba(255,255,255,.7);font-weight:600}
+
+/* ─── FIELDS ─────────────────────────────────────────────── */
+.field{margin-bottom:18px}
+.field label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:8px}
+.field input{width:100%;padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);color:var(--white);font-family:'Barlow',sans-serif;font-size:14px;font-weight:300;outline:none;transition:border .2s,background .2s;-webkit-appearance:none}
+.field input:focus{border-color:rgba(255,255,255,.32);background:rgba(255,255,255,.07)}
+.field input::placeholder{color:rgba(255,255,255,.18)}
+.field input.error{border-color:rgba(255,100,100,.5)}
+.field-err{font-size:11px;color:#ff6b6b;margin-top:5px;display:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px}
+.field.has-err .field-err{display:block}
+.field.has-err input{border-color:rgba(255,100,100,.4)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ─── PASSWORD TOGGLE ────────────────────────────────────── */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:48px}
+.pw-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.28);cursor:pointer;display:flex;transition:color .2s}
+.pw-eye:hover{color:rgba(255,255,255,.6)}
+.pw-eye svg{width:17px;height:17px}
+
+/* ─── FORGOT LINK ────────────────────────────────────────── */
+.forgot{display:block;text-align:right;margin:-10px 0 18px;font-size:12px;color:rgba(255,255,255,.3);transition:color .2s}
+.forgot:hover{color:rgba(255,255,255,.6)}
+
+/* ─── PRIMARY BUTTON ─────────────────────────────────────── */
+.btn-auth{width:100%;padding:15px;background:var(--white);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border:none;cursor:pointer;position:relative;overflow:hidden;transition:background .25s;margin-top:4px}
+.btn-auth::before{content:'';position:absolute;inset:0;background:var(--dove-light);transform:translateX(-101%);transition:transform .3s}
+.btn-auth:hover::before{transform:translateX(0)}
+.btn-auth span{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-auth:disabled{opacity:.5;cursor:not-allowed}
+.btn-auth.loading span::after{content:'';width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--black);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:rgba(255,255,255,.16);font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+
+/* ─── GOOGLE BUTTON ──────────────────────────────────────── */
+.btn-google{width:100%;padding:13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
+.btn-google:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:var(--white);opacity:1}
+.btn-google svg{width:18px;height:18px;flex-shrink:0}
+
+/* ─── OTP INPUTS ─────────────────────────────────────────── */
+.otp-wrap{display:flex;gap:10px;justify-content:center;margin:24px 0}
+.otp-input{width:48px;height:56px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.04em;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:var(--white);outline:none;transition:border .2s}
+.otp-input:focus{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.08)}
+.otp-input.filled{border-color:rgba(255,255,255,.3)}
+.otp-resend{text-align:center;font-size:12px;color:rgba(255,255,255,.3);margin-top:14px}
+.otp-resend button{background:none;border:none;color:rgba(255,255,255,.5);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;text-decoration:underline;transition:color .2s}
+.otp-resend button:hover{color:var(--white)}
+.otp-timer{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.4);text-align:center;margin-top:8px}
+
+/* ─── TERMS ──────────────────────────────────────────────── */
+.terms{margin-top:22px;text-align:center;font-size:10px;color:rgba(255,255,255,.22);line-height:1.7}
+.terms a{color:rgba(255,255,255,.38);text-decoration:underline}
+
+/* ─── SUCCESS SCREEN ─────────────────────────────────────── */
+.success-screen{display:none;text-align:center;padding:20px}
+.success-screen.show{display:block;animation:screenIn .5s both}
+.success-check{width:64px;height:64px;border-radius:50%;border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.success-check svg{width:28px;height:28px;color:var(--white)}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.06em;margin-bottom:10px}
+.success-msg{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;font-weight:300}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--white);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:13px 26px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.error{background:#1a0505;color:#ff6b6b;border:1px solid rgba(255,100,100,.3)}
+
+/* ─── UNIVERSAL RESPONSIVE FIXES ─── */
+img { max-width: 100%; height: auto; }
+video { max-width: 100%; height: auto; }
+iframe { max-width: 100%; }
+input, select, textarea { max-width: 100%; }
+table { max-width: 100%; overflow-x: auto; display: block; }
+
+@media(max-width:480px){
+  .auth-panel{padding:32px 16px}
+}
+@media(max-width:360px){
+  .otp-input{width:34px;height:42px;font-size:18px}
+  .otp-wrap{gap:4px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="logo">
+    <img src="alive logo.png" alt="ALIVE Logo">
+  </a>
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
+</div>
+
+<div class="auth-wrapper">
+
+  <!-- ── LEFT VISUAL ── -->
+  <div class="auth-visual">
+    <img src="alive logo.png" alt="ALIVE Logo" class="visual-bg-logo">
+    <div class="visual-content">
+      <div class="visual-tagline">WEAR IT.<br>LOVE IT.<br>LIVE IT.</div>
+      <p class="visual-sub">Join the ALIVE community and unlock exclusive access to new drops and order tracking.</p>
+      <div class="visual-perks">
+        <div class="perk"><div class="perk-dot"></div>Order tracking &amp; history</div>
+        <div class="perk"><div class="perk-dot"></div>Saved addresses for fast checkout</div>
+      </div>
+    </div>
+    <div class="visual-divider"></div>
+  </div>
+
+  <!-- ── AUTH PANEL ── -->
+  <div class="auth-panel">
+
+    <!-- STEP DOTS -->
+    <div class="step-dots">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="auth-tabs" id="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- ═══ SCREEN: LOGIN ═══ -->
+    <div class="screen active" id="screen-login">
+      <div class="form-title">Welcome back.</div>
+      <p class="form-sub">Enter your email — we'll send you a verification code.</p>
+
+      <div class="field" id="f-lemail">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email">
+        <div class="field-err">Please enter a valid email.</div>
+      </div>
+      <div class="field" id="f-lpass">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+          <button class="pw-eye" type="button" onclick="togglePw('login-pass',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="field-err">Password is required.</div>
+      </div>
+      <button class="btn-auth" id="btn-login" onclick="handleLogin()"><span>Sign In &amp; Send Code</span></button>
+    </div>
+
+    <!-- ═══ SCREEN: REGISTER ═══ -->
+    <div class="screen" id="screen-register">
+      <div class="form-title">Join ALIVE.</div>
+      <p class="form-sub">Create your account — all you need is an email.</p>
+
+      <div class="field-row">
+        <div class="field" id="f-rfn">
+          <label>First Name</label>
+          <input type="text" id="reg-fn" placeholder="Alex" autocomplete="given-name">
+          <div class="field-err">Required.</div>
+        </div>
+        <div class="field" id="f-rln">
+          <label>Last Name</label>
+          <input type="text" id="reg-ln" placeholder="Silva" autocomplete="family-name">
+          <div class="field-err">Required.</div>
+        </div>
+      </div>
+      <div class="field" id="f-remail">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+        <div class="field-err">Enter a valid email.</div>
+      </div>
+      <div class="field" id="f-rpass">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg-pass" placeholder="Minimum 8 characters" autocomplete="new-password">
+          <button class="pw-eye" type="button" onclick="togglePw('reg-pass',this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="field-err">Min. 8 characters required.</div>
+      </div>
+
+      <button class="btn-auth" id="btn-reg" onclick="handleRegister()"><span>Create Account &amp; Send Code</span></button>
+    </div>
+
+    <!-- ═══ SCREEN: VERIFY OTP ═══ -->
+    <div class="screen" id="screen-otp">
+      <div class="form-title">Check your email.</div>
+      <p class="form-sub">We sent a 6-digit code to<br><strong id="otp-email-display">your@email.com</strong></p>
+
+      <div class="otp-wrap">
+        <input class="otp-input" maxlength="1" id="otp-0" oninput="otpNext(this,0)" onkeydown="otpBack(event,0)" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-input" maxlength="1" id="otp-1" oninput="otpNext(this,1)" onkeydown="otpBack(event,1)" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-input" maxlength="1" id="otp-2" oninput="otpNext(this,2)" onkeydown="otpBack(event,2)" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-input" maxlength="1" id="otp-3" oninput="otpNext(this,3)" onkeydown="otpBack(event,3)" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-input" maxlength="1" id="otp-4" oninput="otpNext(this,4)" onkeydown="otpBack(event,4)" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-input" maxlength="1" id="otp-5" oninput="otpNext(this,5)" onkeydown="otpBack(event,5)" inputmode="numeric" pattern="[0-9]">
+      </div>
+
+      <button class="btn-auth" id="btn-verify" onclick="verifyOTP()"><span>Verify &amp; Continue</span></button>
+
+      <div class="otp-timer" id="otp-timer">Resend in 60s</div>
+      <div class="otp-resend">
+        Didn't receive it? <button id="resend-btn" onclick="resendCode()" disabled>Resend Code</button>
+      </div>
+    </div>
+
+    <!-- ═══ SUCCESS ═══ -->
+    <div class="success-screen" id="success-screen">
+      <div class="success-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title" id="success-title">You're in!</div>
+      <p class="success-msg" id="success-msg">Welcome to ALIVE. Redirecting you now...</p>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   ALIVE — login.html script
+   ─ Google OAuth (GIS popup flow)
+   ─ EmailJS verification codes
+   ─ 6-digit OTP flow
+═══════════════════════════════════════════ */
+
+/* ── CONFIG — fill these with your real values ──────────── */
+const EMAILJS_PUBLIC_KEY  = 'fokKcnJssOf1ta3A4';   // emailjs.com → Account → Public Key
+const EMAILJS_SERVICE_ID  = 'service_vt9toze';   // emailjs.com → Email Services
+const EMAILJS_TEMPLATE_ID = 'template_h8ool5g';  // emailjs.com → Email Templates
+const GOOGLE_CLIENT_ID    = '537009667187-no09quf8280lotv4basauo54rggdgna0.apps.googleusercontent.com'; // console.cloud.google.com
+/* ─────────────────────────────────────────────────────── */
+
+/* Initialize EmailJS with the correct public key from config */
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+let pendingUser   = null;   // { email, name, password, isRegister }
+let generatedOTP  = '';
+let otpTimer      = null;
+let currentTab    = 'login';
+
+/* ── tab switching ── */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', i === (tab==='login'?0:1)));
+  showScreen(tab==='login' ? 'screen-login' : 'screen-register');
+  setDot(1);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('success-screen').classList.remove('show');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function setDot(step) {
+  for (let i=1;i<=3;i++) {
+    const d = document.getElementById('dot-'+i);
+    d.classList.toggle('active', i===step);
+    d.classList.toggle('done', i<step);
+  }
+}
+
+/* ── email validation ── */
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function setErr(fieldId, show) {
+  document.getElementById(fieldId)?.classList.toggle('has-err', show);
+}
+
+/* ── generate 6-digit OTP ── */
+function generateOTP() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+/* ── send OTP via EmailJS ── */
+async function sendOTP(email, name, code) {
+
+  const params = {
+    to_email : email,
+    to_name  : name || email.split('@')[0],
+    otp_code : code,
+    shop_name: 'ALIVE Clothing',
+  };
+
+  console.log("Sending OTP to:", email, "| Code:", code);
+
+  try {
+    const result = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+    console.log("EmailJS send success:", result);
+    return true;
+  } catch (err) {
+    console.error('EmailJS send FAILED:', err?.text || err?.message || err);
+
+    /* Still log the OTP to console as a fallback so testing is possible */
+    console.log(
+      `%c ALIVE OTP CODE (fallback): ${code}`,
+      'font-size:20px;color:#0a0a0a;background:#f8f8f8;padding:8px 16px;'
+    );
+
+    return false;
+  }
+}
+
+/* ── LOGIN ── */
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  let ok = true;
+  if (!isValidEmail(email)) { setErr('f-lemail',true); ok=false; } else setErr('f-lemail',false);
+  if (!pass)                 { setErr('f-lpass',true);  ok=false; } else setErr('f-lpass',false);
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-login');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  // FIX: Look up existing user's name from Supabase/localStorage instead of using email prefix
+  let existingName = email.split('@')[0]; // default fallback
+
+  // 1. Check localStorage clients list first
+  try {
+    const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+    const existingClient = clients.find(c => c.email === email);
+    if (existingClient && existingClient.name) {
+      existingName = existingClient.name;
+    }
+  } catch(e) {}
+
+  // 2. Check Supabase for the user's saved profile name
+  if (typeof AliveDB !== 'undefined' && AliveDB.getClient()) {
+    try {
+      const supaUser = await AliveDB.getUserByEmail(email);
+      if (supaUser) {
+        // Try to get the client profile for the full name
+        const profile = await AliveDB.getClientProfile(supaUser.id);
+        if (profile && profile.full_name) {
+          existingName = profile.full_name;
+        } else if (supaUser.data && supaUser.data.name) {
+          existingName = supaUser.data.name;
+        }
+      }
+    } catch(e) {
+      console.warn('[Login] Supabase name lookup failed:', e);
+    }
+  }
+
+  generatedOTP = generateOTP();
+  pendingUser  = { email, password: pass, name: existingName, isRegister: false };
+
+  const sent = await sendOTP(email, pendingUser.name, generatedOTP);
+  btn.classList.remove('loading'); btn.disabled = false;
+
+  document.getElementById('otp-email-display').textContent = email;
+  document.getElementById('auth-tabs').style.display = 'none';
+  showScreen('screen-otp');
+  setDot(2);
+  startOTPTimer();
+
+  if (sent) showToast('Verification code sent to ' + email);
+  else      showToast('Email failed — check console (F12) for code', true);
+}
+
+/* ── REGISTER ── */
+async function handleRegister() {
+  const fn    = document.getElementById('reg-fn').value.trim();
+  const ln    = document.getElementById('reg-ln').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  let ok = true;
+  if (!fn)                   { setErr('f-rfn',true);    ok=false; } else setErr('f-rfn',false);
+  if (!ln)                   { setErr('f-rln',true);    ok=false; } else setErr('f-rln',false);
+  if (!isValidEmail(email))  { setErr('f-remail',true); ok=false; } else setErr('f-remail',false);
+  if (pass.length < 8)       { setErr('f-rpass',true);  ok=false; } else setErr('f-rpass',false);
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-reg');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  generatedOTP = generateOTP();
+  pendingUser  = { email, password: pass, name: fn+' '+ln, isRegister: true };
+
+  const sent = await sendOTP(email, fn, generatedOTP);
+  btn.classList.remove('loading'); btn.disabled = false;
+
+  document.getElementById('otp-email-display').textContent = email;
+  document.getElementById('auth-tabs').style.display = 'none';
+  showScreen('screen-otp');
+  setDot(2);
+  startOTPTimer();
+
+  if (sent) showToast('Verification code sent to ' + email);
+  else      showToast('Email failed — check console (F12) for code', true);
+}
+
+/* ── OTP INPUT NAVIGATION ── */
+function otpNext(el, idx) {
+  el.value = el.value.replace(/\D/g,'').slice(0,1);
+  el.classList.toggle('filled', el.value.length===1);
+  if (el.value && idx < 5) document.getElementById('otp-'+(idx+1)).focus();
+  if (idx===5 && el.value) autoVerify();
+}
+function otpBack(e, idx) {
+  if (e.key==='Backspace' && !e.target.value && idx>0) document.getElementById('otp-'+(idx-1)).focus();
+}
+function getOTPValue() {
+  return Array.from({length:6}, (_,i) => document.getElementById('otp-'+i).value).join('');
+}
+function autoVerify() { setTimeout(verifyOTP, 200); }
+
+/* ── VERIFY OTP ── */
+function verifyOTP() {
+  const entered = getOTPValue();
+  if (entered.length < 6) { showToast('Enter all 6 digits', true); return; }
+
+  if (entered !== generatedOTP) {
+    Array.from({length:6},(_,i)=>document.getElementById('otp-'+i)).forEach(el=>{el.style.borderColor='rgba(255,100,100,.5)';el.value='';});
+    document.getElementById('otp-0').focus();
+    showToast('Incorrect code. Try again.', true);
+    return;
+  }
+
+  /* ✅ Verified */
+  clearInterval(otpTimer);
+
+  // FIX: For returning users, ensure we use the correct saved name
+  (async function lookupExistingName() {
+    if (!pendingUser.isRegister) {
+      // Try to get the most up-to-date name from Supabase
+      if (typeof AliveDB !== 'undefined' && AliveDB.getClient()) {
+        try {
+          const supaUser = await AliveDB.getUserByEmail(pendingUser.email);
+          if (supaUser) {
+            const profile = await AliveDB.getClientProfile(supaUser.id);
+            if (profile && profile.full_name) {
+              pendingUser.name = profile.full_name;
+            } else if (supaUser.data && supaUser.data.name) {
+              pendingUser.name = supaUser.data.name;
+            }
+          }
+        } catch(e) {
+          console.warn('[Login verifyOTP] Supabase name lookup failed:', e);
+        }
+      }
+      // Also check localStorage clients
+      try {
+        const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+        const existingClient = clients.find(c => c.email === pendingUser.email);
+        if (existingClient && existingClient.name && existingClient.name !== existingClient.email) {
+          // Use the localStorage name if it's different from email (i.e., user set it)
+          if (pendingUser.name === pendingUser.email.split('@')[0]) {
+            pendingUser.name = existingClient.name;
+          }
+        }
+      } catch(e) {}
+    }
+  })().then(() => {
+    localStorage.setItem('alive-user', JSON.stringify(pendingUser));
+    localStorage.setItem('aliveSession', '1');
+    proceedAfterVerification();
+  });
+
+  function proceedAfterVerification() {
+    /* ── Register / sync client in admin panel ── */
+    (function syncClientToAdmin() {
+      const clients = JSON.parse(localStorage.getItem('alive-clients') || '[]');
+      const existing = clients.find(c => c.email === pendingUser.email);
+      if (pendingUser.isRegister && !existing) {
+        // New registration — add to admin clients list
+        const newClient = {
+          id: 'CL-' + Date.now(),
+          name: pendingUser.name,
+          email: pendingUser.email,
+          phone: '',
+          address: '',
+          joinedDate: new Date().toISOString()
+        };
+        clients.push(newClient);
+        localStorage.setItem('alive-clients', JSON.stringify(clients));
+        // Save new user permanently to Supabase
+        if (typeof AliveSync !== 'undefined') {
+          AliveSync.saveUser(newClient);
+          // Also save client profile to Supabase
+          if (AliveSync.saveClientProfile) {
+            AliveSync.saveClientProfile({
+              email: newClient.email,
+              full_name: newClient.name,
+              phone: newClient.phone || '',
+              address: '',
+              city: '',
+              province: '',
+              postal_code: '',
+              country: 'Sri Lanka',
+            }).catch(e => console.warn('[Login] Client profile save failed:', e));
+          }
+        }
+      } else if (existing) {
+        // Returning login — update name from profile if it was changed
+        if (pendingUser.name && pendingUser.name !== existing.name && pendingUser.name !== pendingUser.email.split('@')[0]) {
+          existing.name = pendingUser.name;
+          localStorage.setItem('alive-clients', JSON.stringify(clients));
+        }
+        // Refresh Supabase user row with latest data
+        if (typeof AliveSync !== 'undefined') {
+          AliveSync.saveUser(existing);
+          // Also refresh client profile
+          if (AliveSync.saveClientProfile) {
+            AliveSync.saveClientProfile({
+              email: existing.email,
+              full_name: existing.name,
+              phone: existing.phone || '',
+              address: existing.address || '',
+              city: existing.city || '',
+              province: existing.province || '',
+              postal_code: existing.postal_code || '',
+              country: existing.country || 'Sri Lanka',
+            }).catch(e => console.warn('[Login] Client profile refresh failed:', e));
+          }
+        }
+      }
+    })();
+
+    setDot(3);
+    showScreen('__none__');
+
+    const s = document.getElementById('success-screen');
+    s.classList.add('show');
+    document.getElementById('success-title').textContent = pendingUser.isRegister ? 'Account Created!' : 'Welcome back!';
+    document.getElementById('success-msg').textContent   = 'Hello ' + pendingUser.name.split(' ')[0] + '! Redirecting you now...';
+
+    setTimeout(() => window.location.href = 'profile.html', 1800);
+  }
+}
+
+/* ── RESEND ── */
+async function resendCode() {
+  clearInterval(otpTimer);
+  Array.from({length:6},(_,i)=>{const e=document.getElementById('otp-'+i);e.value='';e.classList.remove('filled');e.style.borderColor='';});
+  generatedOTP = generateOTP();
+  const sent = await sendOTP(pendingUser.email, pendingUser.name, generatedOTP);
+  startOTPTimer();
+  if (sent) showToast('New code sent!');
+  else      showToast('Email failed — check console (F12) for code', true);
+}
+
+function startOTPTimer() {
+  let t = 60;
+  const timerEl  = document.getElementById('otp-timer');
+  const resendBtn = document.getElementById('resend-btn');
+  resendBtn.disabled = true;
+  clearInterval(otpTimer);
+  otpTimer = setInterval(() => {
+    t--;
+    timerEl.textContent = t > 0 ? `Resend in ${t}s` : '';
+    if (t <= 0) { clearInterval(otpTimer); resendBtn.disabled = false; }
+  }, 1000);
+}
+
+/* ── PASSWORD TOGGLE ── */
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type==='password'?'text':'password';
+  btn.querySelector('svg').innerHTML = inp.type==='text'
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+
+
+/* ── TOAST ── */
+function showToast(msg, isErr=false, isWarn=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr?' error':'') + (isWarn?' warn':'');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{t.className='';}, 4000);
+}
+
+/* ── ENTER KEY ── */
+document.addEventListener('keydown', e => {
+  if (e.key!=='Enter') return;
+  const active = document.querySelector('.screen.active');
+  if (!active) return;
+  if (active.id==='screen-login') handleLogin();
+  else if (active.id==='screen-register') handleRegister();
+  else if (active.id==='screen-otp') verifyOTP();
+});
+
+/* ── If already logged in → redirect ── */
+if (localStorage.getItem('aliveSession')) window.location.href = 'profile.html';
+</script>
+</body>
+</html>

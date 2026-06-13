@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Bag — ALIVE Clothing</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-sync.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #f8f8f8;
+  --dove: #b8b8b8;
+  --dove-light: #e8e8e8;
+  --dove-mid: #d0d0d0;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--white);color:var(--black);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9997;opacity:.4}
+a,button{cursor:pointer}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:20px clamp(16px,5vw,60px);background:rgba(248,248,248,.95);backdrop-filter:blur(14px);border-bottom:1px solid rgba(0,0,0,.06);width:100%}
+.logo img {
+  height: 40px;   /* adjust based on your navbar */
+  width: auto;
+  display: block;
+}
+.nav-links{display:flex;gap:40px;list-style:none}
+.nav-links a{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:var(--black);position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1.5px;background:var(--black);transition:width .3s}
+.nav-links a:hover::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:20px}
+.nav-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;position:relative;text-decoration:none;color:var(--black)}
+.nav-icon svg{width:20px;height:20px}
+.cart-badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--black);color:var(--white);border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.btn-nav{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--black);color:var(--white);border:none;padding:10px 24px;text-decoration:none;transition:background .2s,color .2s}
+.btn-nav:hover{background:var(--dove);color:var(--black);opacity:1}
+
+/* ── PAGE HEADER ── */
+.page-header{padding:120px clamp(16px,5vw,60px) 48px;border-bottom:1px solid var(--dove-light);background:black;}
+.page-header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,8vw,90px);letter-spacing:.04em;line-height:1;color:white;}
+.page-count{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dove);margin-bottom:12px}
+
+/* ── MAIN LAYOUT ── */
+.cart-layout{max-width:1200px;margin:0 auto;padding:clamp(24px,5vw,60px);display:grid;grid-template-columns:1fr 380px;gap:clamp(24px,5vw,60px);min-height:60vh}
+@media(max-width:1000px){.cart-layout{grid-template-columns:1fr;padding:32px 20px}}
+
+/* ── CART ITEMS ── */
+.cart-items-col{}
+.cart-section-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgb(94, 94, 94);padding-bottom:16px;border-bottom:1px solid var(--dove-light);margin-bottom:0}
+
+.cart-item{display:grid;grid-template-columns:100px 1fr;gap:24px;padding:28px 0;border-bottom:1px solid var(--dove-light);animation:fadeInUp .4s both}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.cart-item-img{width:100px;height:120px;object-fit:cover;background:var(--dove-light)}
+.cart-item-info{display:flex;flex-direction:column;justify-content:space-between}
+.cart-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cart-item-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;text-transform:uppercase;line-height:1.2}
+.cart-item-remove{background:none;border:none;color:rgb(94, 94, 94);font-size:18px;padding:0;line-height:1;transition:color .2s}
+.cart-item-remove:hover{color:var(--black);opacity:1}
+.cart-item-meta{font-size:12px;color:rgb(94, 94, 94);margin-top:6px;font-weight:300;letter-spacing:.5px}
+.cart-item-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.qty-control{display:flex;align-items:center;border:1.5px solid var(--dove-light)}
+.qty-btn{width:36px;height:36px;background:none;border:none;font-size:18px;color:var(--black);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.qty-btn:hover{background:var(--dove-light);opacity:1}
+.qty-num{width:40px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;border-left:1.5px solid var(--dove-light);border-right:1.5px solid var(--dove-light);line-height:36px}
+.cart-item-price{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em}
+
+/* ── CONTINUE SHOPPING ── */
+.continue-link{display:inline-flex;align-items:center;gap:8px;margin-top:32px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:rgb(94, 94, 94);transition:color .2s}
+.continue-link:hover{color:var(--black)}
+.continue-link svg{width:16px;height:16px}
+
+/* ── EMPTY STATE ── */
+.cart-empty{text-align:center;padding:80px 40px}
+.cart-empty svg{width:60px;height:60px;color:var(--dove-mid);margin:0 auto 24px;display:block}
+.cart-empty h3{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.06em;margin-bottom:12px}
+.cart-empty p{font-size:14px;color:var(--dove);margin-bottom:32px;font-weight:300}
+
+/* ── SUMMARY COL ── */
+.cart-summary{position:sticky;top:100px;align-self:start}
+.summary-box{border:1.5px solid var(--dove-light);padding:36px}
+.summary-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.06em;margin-bottom:28px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:14px}
+.summary-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgb(94, 94, 94);}
+.summary-value{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.5px}
+.summary-divider{height:1px;background:var(--dove-light);margin:20px 0}
+.summary-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.summary-total-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.summary-total-value{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em}
+
+/* ── DISCOUNT ── */
+.discount-wrap{margin-bottom:24px}
+.discount-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgb(94, 94, 94);margin-bottom:8px;display:block}
+.discount-input-row{display:flex;gap:0}
+.discount-input-row input{flex:1;padding:12px 16px;border:1.5px solid var(--dove-light);border-right:none;background:transparent;font-family:'Barlow',sans-serif;font-size:13px;outline:none;color:var(--black)}
+.discount-input-row input::placeholder{color:var(--dove-mid)}
+.discount-input-row input:focus{border-color:var(--black)}
+.btn-discount{padding:12px 18px;background:var(--black);color:var(--white);border:none;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:background .2s}
+.btn-discount:hover{background:#333;opacity:1}
+
+/* ── CTA ── */
+.btn-checkout{width:100%;padding:18px;background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border:none;position:relative;overflow:hidden;margin-bottom:12px;transition:background .25s}
+.btn-checkout::before{content:'';position:absolute;inset:0;background:var(--dove-light);transform:translateX(-101%);transition:transform .3s}
+.btn-checkout:hover{color:var(--black);opacity:1}
+.btn-checkout:hover::before{transform:translateX(0)}
+.btn-checkout span{position:relative;z-index:1}
+.secure-note{text-align:center;font-size:11px;color:rgb(94, 94, 94);display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase}
+.secure-note svg{width:12px;height:12px}
+
+/* ── PAYMENT ICONS ── */
+.payment-icons{display:flex;gap:8px;margin-top:20px;justify-content:center;flex-wrap:wrap}
+.pay-icon{padding:4px 10px;border:1px solid var(--dove-light);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgb(94, 94, 94);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;padding:14px 28px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer { background:var(--black); color:var(--white); padding:80px clamp(24px,5vw,60px) 40px; }
+.footer-top {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:clamp(24px,5vw,60px); margin-bottom:60px;
+}
+.footer-logo{
+  width:clamp(160px,30vw,230px);
+  height:auto;
+  margin-bottom:8px;
+  display:block;
+  filter: brightness(0) invert(1);
+  margin-top: clamp(20px,5vw,60px);
+}
+.footer-tagline {
+  font-style:italic; font-weight:300; color:var(--dove);
+  font-size:20px; margin-bottom:20px;
+}
+.footer-socials { display:flex; gap:10px; }
+.social-btn {
+  width:38px; height:38px; border:1px solid rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center;
+  text-decoration:none; transition:border-color .2s, background .2s;
+}
+.social-btn:hover { border-color:var(--white); background:rgba(255,255,255,.08); opacity:1; }
+.social-btn svg { width:16px; height:16px; color:var(--white); }
+.footer-col h4 {
+  font-family:'Barlow Condensed', sans-serif; font-size:11px;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dove); margin-bottom:24px;
+}
+.footer-col ul { list-style:none; }
+.footer-col ul li { margin-bottom:10px; }
+.footer-col ul li a {
+  font-size:14px; font-weight:300; color:rgba(255,255,255,.7); text-decoration:none;
+  transition:color .2s;
+}
+.footer-col ul li a:hover { color:var(--white); opacity:1; }
+.footer-contact-item {
+  display:flex; gap:10px; align-items:flex-start;
+  margin-bottom:14px; font-size:13px; font-weight:300; color:rgba(255,255,255,.7);
+}
+.footer-contact-item svg { width:15px; height:15px; flex-shrink:0; margin-top:2px; color:var(--dove); }
+.footer-bottom {
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:30px; border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-copy { font-size:12px; font-weight:300; color:rgba(255,255,255,.3); letter-spacing:.5px; }
+.footer-legal { display:flex; gap:24px; }
+.footer-legal a {
+  font-size:12px; font-weight:300; color:rgb(255, 255, 255); text-decoration:none;
+  transition:color .2s;
+}
+.footer-legal a:hover { color:rgba(255,255,255,.7); opacity:1; }
+.footer-copy a {
+  color: #969696; /* accent color */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-copy a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ── HAMBURGER ── */
+.nav-hamburger{display:none;width:40px;height:40px;background:none;border:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:6px}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--black);transition:all .3s}
+.nav-hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* ── MOBILE NAV ── */
+.mobile-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;opacity:0;visibility:hidden;transition:all .3s}
+.mobile-nav-overlay.open{opacity:1;visibility:visible}
+.mobile-nav{position:fixed;top:0;right:0;width:300px;max-width:85vw;height:100vh;background:var(--white);z-index:2001;transform:translateX(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);overflow-y:auto;display:flex;flex-direction:column}
+.mobile-nav.open{transform:translateX(0)}
+.mobile-nav-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid rgba(0,0,0,.08)}
+.mobile-nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;color:var(--black)}
+.mobile-nav-close{background:none;border:none;font-size:22px;color:var(--black);cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.mobile-nav-links{list-style:none;padding:16px 0;flex:1}
+.mobile-nav-links li{border-bottom:1px solid rgba(0,0,0,.05)}
+.mobile-nav-links a{display:block;padding:16px 24px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);text-decoration:none;transition:background .2s}
+.mobile-nav-links a:hover{background:var(--dove-light)}
+.mobile-nav-actions{padding:20px 24px;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:10px}
+.mobile-nav-btn{display:block;text-align:center;padding:14px;background:var(--black);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:background .2s}
+.mobile-nav-btn:hover{background:#333}
+
+/* ── RESPONSIVE FIXES ── */
+@media(max-width:1000px){
+  .page-header{padding:110px 24px 36px}
+  .page-header-inner{flex-direction:column;align-items:flex-start;gap:8px}
+  .cart-layout{padding:32px 20px;gap:32px}
+}
+
+@media(max-width:900px){
+  nav{padding:16px 20px}
+  .nav-links{display:none}
+  .nav-hamburger{display:flex}
+  footer{padding:60px 24px 30px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:32px}
+}
+
+@media(max-width:600px){
+  .cart-item{grid-template-columns:80px 1fr;gap:14px}
+  .cart-item-img{width:80px;height:96px}
+  .cart-item-name{font-size:15px}
+  .cart-item-price{font-size:18px}
+  .summary-box{padding:24px}
+  .summary-title{font-size:22px}
+  .page-header{padding:100px 16px 28px}
+  .cart-layout{padding:20px 16px;gap:28px}
+  .footer-top{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column;gap:12px;text-align:center}
+  .footer-logo{width:180px;margin-top:0}
+  .footer-tagline{font-size:16px}
+}
+
+@media(max-width:480px){
+  .cart-item{grid-template-columns:1fr;gap:12px}
+  .cart-item-img{width:100%;height:160px}
+  .cart-item-bottom{flex-direction:row;flex-wrap:wrap;gap:12px}
+  .qty-control{order:1}
+  .cart-item-price{order:2;margin-left:auto}
+  .summary-box{padding:20px}
+  .discount-input-row{flex-direction:column}
+  .discount-input-row input{border-right:1.5px solid var(--dove-light);border-bottom:none;padding:12px 14px}
+  .btn-discount{padding:12px 18px}
+  .btn-checkout{padding:16px}
+  .cart-item-name{font-size:14px}
+  .cart-item-meta{font-size:11px}
+  .page-title{font-size:clamp(36px,10vw,52px)}
+}
+
+@media(max-width:360px){
+  nav{padding:14px 12px}
+  .logo img{height:32px}
+  .nav-icon{width:36px;height:36px}
+  .nav-icon svg{width:18px;height:18px}
+  .cart-badge{width:14px;height:14px;font-size:8px;top:2px;right:2px}
+  .btn-nav{padding:8px 16px;font-size:11px}
+  .summary-box{padding:16px}
+  .summary-title{font-size:20px}
+  .summary-total-value{font-size:24px}
+  .qty-btn{width:32px;height:32px;font-size:16px}
+  .qty-num{width:34px;line-height:32px;font-size:13px}
+  .cart-item-name{font-size:13px}
+  .cart-item-price{font-size:16px}
+  .cart-item-meta{font-size:10px}
+  .secure-note{font-size:9px}
+  .footer-logo{width:140px}
+  .footer-tagline{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <img src="alive logo.png" alt="ALIVE Logo">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="#categories">Collections</a></li>
+    <li><a href="#offers">Offers</a></li>
+    <li><a href="size-guide.html">Size Guide</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="#" class="nav-icon" title="Account" onclick="handleProfileClick(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </a>
+    <a href="cart.html" class="nav-icon" title="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+      <span class="cart-badge" id="cart-count">0</span>
+    </a>
+  </div>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-count" id="item-count-label">0 Items</div>
+      <h1 class="page-title">Your Bag</h1>
+    </div>
+  </div>
+</div>
+
+<!-- CART LAYOUT -->
+<div class="cart-layout">
+
+  <!-- LEFT: ITEMS -->
+  <div class="cart-items-col">
+    <div class="cart-section-label">Items</div>
+    <div id="cart-items-list"></div>
+    <a href="shop.html" class="continue-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Continue Shopping
+    </a>
+  </div>
+
+  <!-- RIGHT: SUMMARY -->
+  <div class="cart-summary" id="cart-summary">
+    <div class="summary-box">
+      <div class="summary-title">Order Summary</div>
+
+      <div class="summary-row">
+        <span class="summary-label">Subtotal</span>
+        <span class="summary-value" id="subtotal-val">LKR 0</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Shipping</span>
+        <span class="summary-value" id="shipping-val">Free</span>
+      </div>
+      <div class="summary-row" id="discount-row" style="display:none">
+        <span class="summary-label">Discount</span>
+        <span class="summary-value" id="discount-val" style="color:#22c55e">-LKR 0</span>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-total-row">
+        <span class="summary-total-label">Total</span>
+        <span class="summary-total-value" id="total-val">LKR 0</span>
+      </div>
+
+      <!-- DISCOUNT -->
+      <div class="discount-wrap">
+        <span class="discount-label">Discount Code</span>
+        <div class="discount-input-row">
+          <input type="text" id="discount-input" placeholder="Enter code (e.g. ALIVE10)">
+          <button class="btn-discount" onclick="applyDiscount()">Apply</button>
+        </div>
+      </div>
+
+      <button class="btn-checkout" onclick="goCheckout()">
+        <span>Proceed to Checkout</span>
+      </button>
+
+      <div class="secure-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+        Secure Checkout
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-header">
+    <span class="mobile-nav-logo">ALIVE</span>
+    <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close">✕</button>
+  </div>
+  <ul class="mobile-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="shop.html">Shop</a></li>
+    <li><a href="index.html#categories">Collections</a></li>
+    <li><a href="index.html#offers">Offers</a></li>
+    <li><a href="size-guide.html">Size Guide</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="mobile-nav-actions">
+    <a href="#" class="mobile-nav-btn" onclick="handleProfileClick(event);closeMobileNav()">Account</a>
+    <a href="cart.html" class="mobile-nav-btn">Bag (<span class="mobile-cart-count">0</span>)</a>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <img src="alive logo.png" alt="ALIVE Logo" class="footer-logo">
+      <p class="footer-tagline">Wear it. Love it. Live it.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="shop.html?cat=new">New Arrivals</a></li>
+        <li><a href="shop.html?cat=men">Men</a></li>
+        <li><a href="shop.html?cat=women">Women</a></li>
+        <li><a href="shop.html?cat=unisex">Unisex</a></li>
+        <li><a href="shop.html?cat=formal">Formal Wear</a></li>
+        <li><a href="shop.html?cat=casual">Casual Wear</a></li>
+        <li><a href="shop.html?cat=trending">Trending</a></li>
+        <li><a href="shop.html?cat=accessories">Accessories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="size-guide.html">Size Guide</a></li>
+        <li><a href="returns-policy.html">Returns Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-5.99-5.99 19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.09a16 16 0 006 6l.72-.72a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>+94 70 387 2119</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>aliveclothing.connect@gmail.com</span>
+      </div>
+      <div class="footer-contact-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Monday–Sunday: Open 24 hours</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">
+      © 2025 ALIVE Clothing. All rights reserved. Designed & Developed by 
+      <a href="https://www.linkedin.com/in/dewmini-kandulawa-6917b4385" target="_blank" rel="noopener noreferrer">
+        <strong>Dewmini Kandulawa</strong>
+      </a>.
+    </p>
+  </div>
+</footer>
+
+
+<script>
+let cart = JSON.parse(localStorage.getItem('alive-cart') || '[]');
+let discountAmount = 0;
+const DISCOUNT_CODES = { 'ALIVE10':500,'FORMAL15':1500,'BIG2K':2000,'SAVE20':2000,'SAVE10':0.1 };
+
+function renderCart() {
+  const list = document.getElementById('cart-items-list');
+  const count = cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cart-count').textContent = count;
+  document.querySelectorAll('.mobile-cart-count').forEach(function(el){el.textContent=count});
+  document.getElementById('item-count-label').textContent = count + (count===1?' Item':' Items');
+
+  if (cart.length === 0) {
+    list.innerHTML = `
+      <div class="cart-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <h3>Your bag is empty</h3>
+        <p>Add some pieces you love and they'll appear here.</p>
+        <a href="shop.html" class="btn-checkout" style="display:inline-block;width:auto;padding:16px 40px;text-decoration:none"><span>Shop Now</span></a>
+      </div>`;
+    document.getElementById('cart-summary').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('cart-summary').style.display = '';
+  list.innerHTML = cart.map((item,i) => `
+    <div class="cart-item" style="animation-delay:${i*.07}s">
+      <img class="cart-item-img" src="${item.img || ''}" alt="${item.name}" onerror="this.style.background='#e0e0e0'">
+      <div class="cart-item-info">
+        <div>
+          <div class="cart-item-top">
+            <div class="cart-item-name">${item.name}</div>
+            <button class="cart-item-remove" onclick="removeItem(${item.id})" title="Remove">✕</button>
+          </div>
+          <div class="cart-item-meta">Size: ${item.size || 'M'}${item.color ? ` &nbsp;·&nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};border:1px solid rgba(0,0,0,.2);vertical-align:middle"></span> ${item.color}` : ''} &nbsp;·&nbsp; LKR ${item.price.toLocaleString()} each</div>
+        </div>
+        <div class="cart-item-bottom">
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+          </div>
+          <div class="cart-item-price">LKR ${(item.price*item.qty).toLocaleString()}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const shipping = sub >= 5000 ? 0 : 400;
+  const total = sub + shipping - discountAmount;
+
+  document.getElementById('subtotal-val').textContent = 'LKR ' + sub.toLocaleString();
+  document.getElementById('shipping-val').textContent = shipping === 0 ? 'Free' : 'LKR ' + shipping.toLocaleString();
+  document.getElementById('total-val').textContent = 'LKR ' + Math.max(0,total).toLocaleString();
+
+  if (discountAmount > 0) {
+    document.getElementById('discount-row').style.display = '';
+    document.getElementById('discount-val').textContent = '-LKR ' + discountAmount.toLocaleString();
+  }
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c=>c.id===id);
+  if (item) { item.qty += delta; if (item.qty <= 0) cart = cart.filter(c=>c.id!==id); }
+  save(); renderCart();
+}
+function removeItem(id) {
+  cart = cart.filter(c=>c.id!==id);
+  save(); renderCart();
+  showToast('Item removed from bag');
+}
+function save() { localStorage.setItem('alive-cart', JSON.stringify(cart)); }
+
+function applyDiscount() {
+  const code = document.getElementById('discount-input').value.trim().toUpperCase();
+  const val = DISCOUNT_CODES[code];
+  if (!val) { showToast('Invalid or expired code'); return; }
+  if (val < 1) {
+    const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+    discountAmount = Math.round(sub * val);
+  } else {
+    discountAmount = val;
+  }
+  showToast(`Discount applied: LKR ${discountAmount.toLocaleString()} off!`);
+  updateSummary();
+}
+
+function goCheckout() {
+  if (cart.length === 0) { showToast('Your bag is empty'); return; }
+  const loggedIn = localStorage.getItem('aliveSession') || localStorage.getItem('alive-user');
+  if (!loggedIn) { showToast('Please sign in to checkout'); setTimeout(()=>window.location.href='login.html',800); return; }
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const shipping = sub >= 5000 ? 0 : 350;
+  localStorage.setItem('alive-checkout', JSON.stringify({ items:cart, subtotal:sub, shipping, discount:discountAmount, total:sub+shipping-discountAmount }));
+  window.location.href = 'checkout.html';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+renderCart();
+/* profile icon */
+function handleProfileClick(e) {
+  e.preventDefault();
+
+  const session = localStorage.getItem("aliveSession");
+
+  if (session === "1") {
+    window.location.href = "profile.html";
+  } else {
+    alert("Please login first!");
+    window.location.href = "login.html";
+  }
+}
+
+/* ── MOBILE NAV ── */
+function openMobileNav(){document.getElementById('mobile-nav').classList.add('open');document.getElementById('mobile-nav-overlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeMobileNav(){document.getElementById('mobile-nav').classList.remove('open');document.getElementById('mobile-nav-overlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('nav-hamburger')?.addEventListener('click',function(){document.getElementById('mobile-nav').classList.contains('open')?closeMobileNav():openMobileNav()});
+document.getElementById('mobile-nav-close')?.addEventListener('click',closeMobileNav);
+document.getElementById('mobile-nav-overlay')?.addEventListener('click',closeMobileNav);
+document.querySelectorAll('.mobile-nav-links a').forEach(function(a){a.addEventListener('click',closeMobileNav)});
+</script>
+</body>
+</html>
